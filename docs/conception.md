@@ -95,8 +95,8 @@ endroit, dans le module d'illustration du socle, jamais par l'appelant.
 
 ## Validation
 
-Le socle exporte deux fonctions, et chaque cours les appelle dans un test d'une
-ligne.
+Le socle exporte deux fonctions pour la configuration, une pour les gabarits, et
+chaque cours les appelle dans un test d'une ligne.
 
 - `valideConfig(config)` vérifie les clés et contraintes du tableau ci-dessus,
   sans rien charger. Elle lève **une** erreur qui liste **toutes** les fautes
@@ -123,6 +123,17 @@ import { verifieCours } from '../socle/js/config.js';
 import config from '../site.config.js';
 
 test('le cours respecte le contrat du socle', () => verifieCours(config));
+```
+
+`verifieModeles(site, pages)` (`js/modeles.js`, sous Node) vérifie que les
+gabarits du cours sont des copies exactes des modèles du socle, et nomme sinon la
+page et sa première ligne qui diffère. `pages` vaut par défaut les deux
+gabarits ; un cours qui garde un accueil à lui (A) ne passe que
+`['illustration.html']`.
+
+```js
+import { verifieModeles } from '../socle/js/modeles.js';
+test('les gabarits sont ceux du socle', () => verifieModeles(new URL('../', import.meta.url)));
 ```
 
 ## Contrat d'un module d'illustration
@@ -176,8 +187,35 @@ révisée) : le balisage d'aujourd'hui (en-tête, fil d'Ariane, onglets), les li
 demande JavaScript, et un module qui importe `site.config.js` et appelle
 `demarreAccueil(config)` ou `demarreIllustration(config)`. Le JavaScript ne
 remplit que les textes (titres, intro, signalement) à partir de la configuration.
-Le cours copie les modèles, et un test du socle, exécuté dans le cours, vérifie
-que ses gabarits leur sont identiques.
+Le cours copie les modèles, et `verifieModeles`, appelé par un test du cours,
+vérifie que ses gabarits leur sont identiques (voir [Validation](#validation)).
+
+## Pages
+
+`demarreAccueil(config)` (`js/accueil.js`) et `demarreIllustration(config)`
+(`js/illustration.js`) appellent `valideConfig`, puis remplissent le modèle. Ils
+ne lisent que des éléments du modèle par leur identifiant (accueil : `titre`,
+`sous-titre`, `issues`, `signalement`, `themes` ; illustration : `titre`,
+`source`, `fil-theme`, `page`, `introuvable`, `rappel`, `essais`,
+`onglet-essais`, `zone`), plus `.retour` et `.entete-actions` pour la
+navigation. Les tests du socle chargent les vrais modèles dans le faux DOM : un
+identifiant retiré d'un modèle fait échouer un test.
+
+- **Accueil** : titre `<titre> : explorer le cours`, sous-titre, paragraphes
+  d'`intro` (avant le signalement, formules rendues), lien des issues de
+  `depotIssues`, une section `#theme-<id>` par thème, une carte
+  `#illustration-<id>` par illustration (« à venir » si elle n'est pas
+  disponible). Au retour d'une page (`index.html#<ancre>`), la page défile
+  jusqu'à la carte.
+- **Illustration** : `illustration.html?id=<id>` ; illustration inconnue ou
+  annoncée : « Illustration introuvable », rien n'est chargé. Sinon le module
+  (par `config.charge`) et KaTeX sont chargés ensemble, puis : titres (onglet
+  `<page> · <titre>`), navigation du parcours, réglages lus et écrits dans
+  l'URL, rappel, essais, « ↺ Réinitialiser » si le module a des réglages,
+  glossaire, onglet ouvert gardé dans les préférences
+  `<id>.illustration.<page>`.
+- Moteur du glossaire : `appliqueGlossaire(glossaire, racine, cles)`
+  (`js/glossaire.js`, décision 3).
 
 ## KaTeX
 
@@ -214,7 +252,9 @@ Un cours étend le socle de trois façons, sans modifier un fichier du socle :
    après les illustrations d'un thème (décision 15).
 5. **Greffe sur l'accueil** : l'accueil produit une section `#theme-<id>` par
    thème ; cet identifiant fait partie du contrat. Un cours qui veut ajouter un
-   bloc à un thème appelle `demarreAccueil(config)`, puis le greffe dans la section.
+   bloc à un thème a son propre `index.html` (le modèle, dont le module appelle
+   `await demarreAccueil(config)`, puis greffe le bloc dans la section) et ne
+   vérifie que `illustration.html` par `verifieModeles`.
 
 Rien d'autre n'est défini. Le simulateur d'A utilise 3, 4 et 5 : ses pages
 (`exemple.html`) dans le parcours, son schéma et sa galerie greffés sur

@@ -142,6 +142,20 @@ Un cours décrit ce qui le distingue dans `site.config.js` (clés et contrat : `
 - `js/parcours.js` : `parcours(config)` (l'ordre de lecture, avec les pages de `pagesDuTheme`),
   `precedente`, `suivante`, `ancre`, `installeNavigation(pages, genre, id)`.
 
+### Pages
+
+Les deux pages d'un cours sont des copies des modèles du socle, sans changement :
+`modeles/index.html` et `modeles/illustration.html`. Leur module importe `site.config.js` et appelle
+`demarreAccueil(config)` ou `demarreIllustration(config)`, qui chargent KaTeX et remplissent la page.
+Un test du cours vérifie les copies :
+
+```js
+import { verifieModeles } from '../socle/js/modeles.js';
+test('les gabarits sont ceux du socle', () => verifieModeles(new URL('../', import.meta.url)));
+```
+
+Le moteur du glossaire est `appliqueGlossaire(glossaire, racine, cles)` (`js/glossaire.js`).
+
 ## CSS
 
 Le socle fournit `css/theme.css` (la charte, en variables) et `css/style.css` (les composants).

@@ -1,6 +1,7 @@
 // Faux DOM minimal pour les tests sous Node : juste ce qu'emploient les modules
 // du socle (`head` et `body`, éléments, textes, attributs, `dataset`, sélecteurs simples,
-// événements qui remontent, `focus`, TreeWalker de textes). Écrit à la main
+// événements qui remontent, `focus`, TreeWalker de textes), et le corps d'une page
+// HTML chargé depuis son modèle (`chargeCorps`). Écrit à la main
 // plutôt qu'une dépendance npm : les tests du socle tournent aussi dans le
 // dépôt étudiant, avec un simple `node --test`.
 //
@@ -74,6 +75,10 @@ class Noeud extends Cible {
     let n = this;
     while (n.parentNode) n = n.parentNode;
     return n instanceof Document;
+  }
+
+  before(...noeuds) {
+    this.parentNode.insere(this.parentNode.childNodes.indexOf(this), noeuds);
   }
 
   replaceWith(...noeuds) {
@@ -253,6 +258,11 @@ class Element extends Noeud {
     this.dispatchEvent(evenement('focus', { bubbles: false }));
   }
 
+  // Le document retient l'élément vers lequel la page a défilé.
+  scrollIntoView() {
+    this.ownerDocument.defile = this;
+  }
+
   getBoundingClientRect() {
     return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
   }
@@ -274,6 +284,10 @@ class Document extends Cible {
 
   createTextNode(valeur) {
     return new Texte(valeur);
+  }
+
+  getElementById(id) {
+    return this.querySelector(`[id="${id}"]`);
   }
 
   querySelectorAll(selecteur) {
@@ -343,4 +357,45 @@ export function el(balise, attributs = {}, ...enfants) {
 // défaut). Pour les modules qui lisent la charte (`couleurs()` de theme.js).
 export function installeStyleCalcule(valeur = (nom) => nom) {
   globalThis.getComputedStyle = () => ({ getPropertyValue: valeur });
+}
+
+// Remplace le corps du document par celui de la page `html` (un modèle de
+// modeles/) : balises, attributs entre guillemets doubles, commentaires ignorés.
+// Une entité HTML ou une balise mal fermée lève une erreur plutôt que de mentir.
+const VIDES = new Set(['br', 'hr', 'img', 'input', 'link', 'meta']);
+const JETON = /<!--[\s\S]*?-->|<(\/?)([a-z][\w-]*)((?:\s+[\w-]+(?:="[^"]*")?)*)\s*\/?>|[^<]+/gi;
+const ATTRIBUT = /([\w-]+)(?:="([^"]*)")?/g;
+
+export function chargeCorps(html) {
+  const document = globalThis.document;
+  const corps = html.match(/<body((?:\s+[\w-]+(?:="[^"]*")?)*)\s*>([\s\S]*)<\/body>/i);
+  if (!corps) throw new Error('faux DOM : pas de <body>');
+  const body = document.createElement('body');
+  const pile = [body];
+  const attribue = (e, attributs) => {
+    for (const [, nom, valeur = ''] of attributs.matchAll(ATTRIBUT)) {
+      if (nom === 'hidden') e.hidden = true;
+      else e.setAttribute(nom, valeur);
+    }
+  };
+  attribue(body, corps[1]);
+  for (const [jeton, fermante, balise, attributs] of corps[2].matchAll(JETON)) {
+    if (jeton.startsWith('<!--')) continue;
+    if (!balise) {
+      if (jeton.includes('&')) throw new Error(`faux DOM : entité non prise en charge : ${jeton.trim()}`);
+      pile.at(-1).append(jeton);
+    } else if (fermante) {
+      if (pile.length < 2 || pile.at(-1).tagName !== balise.toUpperCase()) throw new Error(`faux DOM : </${balise}> inattendue`);
+      pile.pop();
+    } else {
+      const e = document.createElement(balise);
+      attribue(e, attributs);
+      pile.at(-1).append(e);
+      if (!VIDES.has(balise.toLowerCase())) pile.push(e);
+    }
+  }
+  if (pile.length > 1) throw new Error(`faux DOM : <${pile.at(-1).tagName.toLowerCase()}> non fermée`);
+  document.documentElement.childNodes.at(-1).replaceWith(body);
+  document.body = body;
+  return document;
 }

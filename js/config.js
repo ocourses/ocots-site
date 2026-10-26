@@ -24,8 +24,8 @@ const CLES = {
   page: ['genre', 'id', 'titre', 'lien'],
 };
 // Préférence que la page d'illustration ajoute à celles du module (l'onglet ouvert).
-const PREFERENCES_DE_LA_PAGE = { onglet: 'rappel' };
-const CHOIX_DE_LA_PAGE = { onglet: ['rappel', 'essais'] };
+export const PREFERENCES_DE_LA_PAGE = { onglet: 'rappel' };
+export const CHOIX_DE_LA_PAGE = { onglet: ['rappel', 'essais'] };
 
 const texte = (v) => typeof v === 'string' && v.trim() !== '';
 const objet = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
