@@ -71,6 +71,10 @@ jobs:
   workflow-pages:
     # Le workflow réutilisable, sur ce dépôt même : ses tests, sans publier.
     uses: ./.github/workflows/site.yml
+    permissions:
+      contents: read
+      pages: write      # le job de publication, sauté ici, les demande : l'appelant doit les accorder
+      id-token: write
     with:
       dossier: examples/minimal
       deployer: false
