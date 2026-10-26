@@ -131,9 +131,10 @@ propre. Voir `docs/css.md`.
 ```bash
 scripts/residu-css.py STYLE_DU_COURS.css --site DOSSIER_SITE > cours.css   # le reste d'un cours
 scripts/residu-css.py STYLE_DU_COURS.css --nouveautes                       # ce que le socle lui apporte
+scripts/site-apres.py DOSSIER_SITE SORTIE                                    # le cours avec le CSS du socle
 scripts/captures.py prendre DOSSIER_SITE SORTIE [--tailles 1504x856 390x844]   # captures avant/après
 scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
-scripts/styles-calcules.py SITE_AVANT SITE_APRES 'illustration.html?id=x'   # styles calculés, page animée
+scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 390x844 1504x600]   # le critère fiable
 ```
 
 Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans interface (variable `CHROME`, sinon

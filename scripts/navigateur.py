@@ -29,11 +29,25 @@ def chrome():
     return CHROME_MACOS
 
 
-def lance_chrome(url, *options, largeur=1504, hauteur=856, delai=90):
-    """Charge `url` (thème clair forcé, temps virtuel de 12 s) ; `options` : --screenshot=…, --dump-dom."""
+def taille(texte):
+    """« 390x844 » -> (390, 844) : une taille de fenêtre, largeur puis hauteur."""
+    largeur, hauteur = texte.lower().split("x")
+    return int(largeur), int(hauteur)
+
+
+def lance_chrome(url, *options, largeur=1504, hauteur=856, delai=90, reprises=1):
+    """Charge `url` (thème clair forcé, temps virtuel de 12 s) ; `options` : --screenshot=…, --dump-dom.
+
+    Chrome sans interface se bloque parfois : après `delai` secondes, il est relancé
+    `reprises` fois, puis `subprocess.TimeoutExpired` remonte à l'appelant."""
     commande = [chrome(), "--headless=new", "--disable-gpu", "--hide-scrollbars", "--blink-settings=preferredColorScheme=1",
                 f"--window-size={largeur},{hauteur}", "--virtual-time-budget=12000", *options, url]
-    return subprocess.run(commande, capture_output=True, text=True, timeout=delai)
+    for essai in range(reprises + 1):
+        try:
+            return subprocess.run(commande, capture_output=True, text=True, timeout=delai)
+        except subprocess.TimeoutExpired:
+            if essai == reprises:
+                raise
 
 
 def port_libre():

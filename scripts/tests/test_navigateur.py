@@ -28,6 +28,36 @@ class Chrome(unittest.TestCase):
             self.assertEqual(navigateur.chrome(), navigateur.CHROME_MACOS)
 
 
+class Reprise(unittest.TestCase):
+    def test_un_chrome_bloque_est_relance_une_fois_puis_l_erreur_remonte(self):
+        appels = []
+
+        def bloque(commande, **_):
+            appels.append(commande)
+            raise navigateur.subprocess.TimeoutExpired(commande, 1)
+
+        with mock.patch.object(navigateur.subprocess, "run", side_effect=bloque):
+            with self.assertRaises(navigateur.subprocess.TimeoutExpired):
+                navigateur.lance_chrome("http://x/")
+        self.assertEqual(len(appels), 2)
+
+    def test_un_chrome_qui_repond_n_est_lance_qu_une_fois(self):
+        with mock.patch.object(navigateur.subprocess, "run", return_value="ok") as run:
+            self.assertEqual(navigateur.lance_chrome("http://x/"), "ok")
+        self.assertEqual(run.call_count, 1)
+
+
+class Taille(unittest.TestCase):
+    def test_largeur_puis_hauteur(self):
+        self.assertEqual(navigateur.taille("390x844"), (390, 844))
+        self.assertEqual(navigateur.taille("1504X600"), (1504, 600))
+
+    def test_une_taille_mal_ecrite_est_refusee(self):
+        for texte in ("390", "390x", "axb"):
+            with self.assertRaises(ValueError, msg=texte):
+                navigateur.taille(texte)
+
+
 class Serveur(unittest.TestCase):
     def test_sert_un_dossier_sans_cache_sur_un_port_libre(self):
         with tempfile.TemporaryDirectory() as dossier:

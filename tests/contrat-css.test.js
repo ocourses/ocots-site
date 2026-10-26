@@ -16,8 +16,9 @@ const lis = (dossier, motif) =>
 // Classes posées par le JavaScript : `className = '…'`, début d'un `className = `…``
 // (le reste dépend de variables), `classList.add/toggle('…')` et `class="…"` dans
 // du HTML construit. Les variantes d'une classe (`pastille ${forme}`) ne sont pas
-// listées : une variante peut ne rien styler à dessein (`.pastille.fleche`).
-const POSEES = [/className = '([^'$`]+)'/g, /className = `([\w-]+)/g, /classList\.(?:add|toggle)\('([^'$`]+)'/g, /class="([^"$]+)"/g];
+// listées : une variante peut ne rien styler à dessein (`.pastille.fleche`). Une classe
+// ajoutée par condition dans un gabarit (`${tirets ? ' tirets' : ''}`) est relevée aussi.
+const POSEES = [/className = '([^'$`]+)'/g, /className = `([\w-]+)/g, /\?\s*' ([\w-]+)'/g, /classList\.(?:add|toggle)\('([^'$`]+)'/g, /class="([^"$]+)"/g];
 const classesPosees = () => {
   const noms = new Set();
   for (const source of lis('js', /\.js$/)) {

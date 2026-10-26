@@ -104,11 +104,29 @@ Résultats (22, 19 et 19 pages ; serveur `serve.mjs` du socle, sans cache) :
   faisait perdre la règle qui suivait ; `unset` écrasait le `cursor: pointer` des liens (le
   navigateur le donne aux `a`), d'où `revert`.
 
+### Trois tailles de fenêtre, styles calculés de M
+
+`scripts/site-apres.py` construit le site « après » d'un cours, comme la migration le posera : les
+feuilles du socle dans `socle/css/`, son `css/cours.css` calculé, et les liens des pages remplacés
+(les anciennes feuilles sont retirées, pour qu'une page oubliée se voie). Puis :
+
+```bash
+scripts/site-apres.py SITE_M /tmp/m-apres
+scripts/styles-calcules.py SITE_M /tmp/m-apres --tailles 1504x856 390x844 1504x600
+```
+
+Résultat : **66 / 66** (22 pages × 3 tailles : 1504 × 856, téléphone 390 × 844, fenêtre basse
+1504 × 600), **aucun élément aux styles différents**. Les règles de petit écran, de hauteur et `:has`
+du socle redonnent donc M à l'identique. Le critère détecte bien ce qu'il doit : une déclaration
+ajoutée dans le `@media` de petit écran donne 1 élément différent à 390 × 844 et 0 à 1504 × 856, ce
+qu'une vérification à une seule taille aurait manqué. Sous la charge de quatre Chrome en parallèle,
+une page peut ne rien rendre à temps : elle est relancée seule avant d'être signalée.
+
 ## Limites
 
-- Le résultat ci-dessus vaut pour une fenêtre de 1504 × 856. `captures.py prendre --tailles 1504x856
-  390x844 1504x600` prend aussi le téléphone et la fenêtre basse (règles de hauteur, `:has`) : à rejouer,
-  obligatoirement, avant la première migration (#464).
+- Captures : une fenêtre de 1504 × 856. Les styles calculés de M, eux, sont vérifiés aux trois
+  tailles (voir ci-dessous). A et C le seront aux trois tailles dans leur PR de migration (#428, #144),
+  puisque c'est là que leur apparence change.
 - L'élagage du CSS mort lit des chaînes littérales : un nom de classe construit autrement serait
   jugé mort à tort. La liste des blocs écartés est affichée pour relecture.
 - Le CSS mort restant est conservé quand un seul de ses sélecteurs peut servir.

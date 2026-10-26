@@ -27,7 +27,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from navigateur import lance_chrome, servi
+from navigateur import lance_chrome, servi, taille
 
 TOLERANCE = 20   # pixels : l'anticrénelage d'un bord n'est pas un écart
 
@@ -55,11 +55,6 @@ def pages(site):
     return liste
 
 
-def taille(texte):
-    largeur, hauteur = texte.lower().split("x")
-    return int(largeur), int(hauteur)
-
-
 def prendre(args):
     site, sortie = Path(args.site).resolve(), Path(args.sortie)
     tailles = [taille(t) for t in args.tailles]
@@ -67,13 +62,10 @@ def prendre(args):
     def une(url, dossier, page, dimensions):
         nom, chemin = page
         fichier = dossier / f"{nom}.png"
-        for _ in range(2):    # Chrome sans interface se bloque parfois : une reprise
-            try:
-                lance_chrome(f"{url}/{chemin}", f"--screenshot={fichier}", largeur=dimensions[0], hauteur=dimensions[1])
-            except subprocess.TimeoutExpired:
-                continue
-            if fichier.exists():
-                break
+        try:    # lance_chrome relance déjà un Chrome bloqué
+            lance_chrome(f"{url}/{chemin}", f"--screenshot={fichier}", largeur=dimensions[0], hauteur=dimensions[1])
+        except subprocess.TimeoutExpired:
+            pass
         return nom, fichier.exists()
 
     manque = []
