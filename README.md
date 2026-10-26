@@ -102,3 +102,16 @@ Tests ajoutés au socle (les cours n'en avaient pas) :
 
 Tests du socle seul : `npm test` (Node 22 ou plus). Serveur de développement :
 `npm run serve`.
+
+Fichiers fusionnés après divergence (voir `CHANGELOG.md`, par fichier et par cours) :
+`js/ui/{katex,repere,format,controls,camera3d,vue3d}.js`,
+`js/illustrations/commun.js`, `js/core/ode.js`.
+
+Vérifier qu'une fusion ne casse aucun cours :
+
+```bash
+scripts/verifie-cours.py     # COURS=~/Courses par défaut
+```
+
+Le script pose les fichiers du socle sur une copie de chaque `site/`, remet
+dans `commun.js` le code propre au cours, et rejoue les tests du cours.
