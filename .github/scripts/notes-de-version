@@ -12,7 +12,7 @@ import sys
 
 
 def section(changelog, version):
-    m = re.search(rf"^## {re.escape(version)}\b.*?\n(.*?)(?=^## |\Z)",
+    m = re.search(rf"^## {re.escape(version)}(?=\s|$).*?\n(.*?)(?=^## |\Z)",
                   changelog, re.M | re.S)
     return m.group(1).strip().rstrip("-").strip() if m else None
 

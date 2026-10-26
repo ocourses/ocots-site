@@ -52,6 +52,13 @@ class Section(unittest.TestCase):
     def test_v0_2_ne_prend_pas_v0_20(self):
         self.assertIsNone(notes.section(CHANGELOG.replace("v0.2.0", "v0.20.0"), "v0.2"))
 
+    def test_une_preversion_au_dessus_ne_remplace_pas_la_version(self):
+        changelog = CHANGELOG.replace(
+            "## v0.2.0 — 2026-11-01",
+            "## v0.2.0-rc1 — 2026-11-01\n\n- préversion\n\n---\n\n## v0.2.0 — 2026-11-01",
+        )
+        self.assertEqual(notes.section(changelog, "v0.2.0"), "### Fichiers\n\n- un\n- deux")
+
 
 if __name__ == "__main__":
     unittest.main()
