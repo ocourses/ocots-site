@@ -29,6 +29,19 @@ Sens de la fusion : union des améliorations, après lecture des écarts.
 | `js/ui/canevas.js` | nouveau | `ajusteCanevas`, extrait de `Repere.prepare` et `Vue3D.prepare` qui le dupliquaient. `graduations` renvoie `[]` pour un intervalle vide ou à l'envers (elle bouclait sur `NaN`). |
 | `js/core/ode.js` | A (= C) | Aucun. |
 
+### CSS (étape « CSS »)
+
+`css/style.css` : la feuille de `mesure-integration` sans sa section propre, en neuf composants
+(`base`, `entete`, `onglets`, `champs`, `petit-ecran`, `catalogue`, `illustration`, `accueil`,
+`infobulle`) importés dans l'ordre d'origine. Chaque cours ajoute son `css/cours.css`
+(`scripts/residu-css.py`). Détail : `docs/css.md`.
+
+**A, C** : règles venues de M, absentes jusqu'ici : titre masqué dans les panneaux d'onglets,
+formules centrées du rappel resserrées, `.zone-verdict` et `.hauteur-fixe`, `button.bouton-lien`,
+espacement sous un canevas, `.entete-barre > div:first-child`. Les six règles qui divergeaient
+(`.entete-actions`, `a.bouton-lien`, `.verdict`, `.legende-courbes`, `.barre-legende`,
+`.texte-fixe`) gardent leur forme actuelle dans le `cours.css` d'A et C.
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
