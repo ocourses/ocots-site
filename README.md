@@ -117,3 +117,17 @@ Le script pose les fichiers du socle sur une copie de chaque `site/`, remplace s
 `commun.js` par une façade (briques du socle + code propre au cours, listé dans
 `scripts/propre-aux-cours.json`), et rejoue les tests du cours. Il compare les **noms**
 des tests réussis avant et après : un test manquant ou en échec fait échouer le script.
+
+## CSS
+
+Le socle fournit `css/theme.css` (la charte, en variables) et `css/style.css` (les composants).
+Un cours lie `socle/css/theme.css`, `socle/css/style.css`, puis `css/cours.css` pour ce qui lui est
+propre. Voir `docs/css.md`.
+
+```bash
+scripts/residu-css.py STYLE_DU_COURS.css --site DOSSIER_SITE > cours.css   # le reste d'un cours
+scripts/residu-css.py STYLE_DU_COURS.css --nouveautes                       # ce que le socle lui apporte
+scripts/captures.py prendre DOSSIER_SITE SORTIE                             # captures avant/après
+scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
+scripts/styles-calcules.py SITE_AVANT SITE_APRES 'illustration.html?id=x'   # styles calculés, page animée
+```
