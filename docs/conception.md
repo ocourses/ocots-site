@@ -268,6 +268,8 @@ barrée, et la nouvelle est ajoutée en dessous avec sa date.
 | 9 | Clés `intro`, `glossaire` | Obligatoires. | Les trois cours ont une intro et un glossaire. |
 | 10 | Emplacement du socle | Sous-module `site/socle/`. | Proposé en ocots-site#3 (PR #11). |
 | 11 | Test du catalogue | `verifieCours(config)` dans le socle. | Le même test est recopié dans les trois cours. |
+| 12 | Briques d'illustration | `js/briques/` dans le socle (`commun.js`, puis `plan-trace-det`, `portraits`). | La conception réserve `js/illustrations/` aux modules du cours, qui garde son propre `commun.js` : deux fichiers de même nom et de rôles différents seraient source de confusion. |
+| 13 | Code sans test autonome (`dim2`) | Écrire des tests de caractérisation avant de le reprendre. | Le code est pur : figer ses sorties actuelles sur des cas typiques est peu coûteux, et c'est le filet de la migration. |
 
 Reportées :
 
