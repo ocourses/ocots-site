@@ -1,0 +1,31 @@
+name: Release
+
+# Un tag vX.Y.Z poussé crée la release GitHub, avec pour notes la section
+# « ## vX.Y.Z » du CHANGELOG. Échoue si la section manque, si la version de
+# package.json n'est pas celle du tag, ou si les tests échouent.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Version de package.json = tag
+        run: |
+          paquet="v$(node -p "require('./package.json').version")"
+          test "$paquet" = "$GITHUB_REF_NAME" || {
+            echo "package.json annonce $paquet, le tag est $GITHUB_REF_NAME"; exit 1; }
+      - run: npm test
+      - run: .github/scripts/notes-de-version "$GITHUB_REF_NAME" > notes.md
+      - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
