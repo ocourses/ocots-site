@@ -51,3 +51,15 @@ interface (module du cours chargé, KaTeX rendu). Rien ne touche GitHub.
 Il ne couvre pas le déploiement GitHub Pages lui-même : `site.yml` du dépôt
 étudiant publie `site/` tel quel (`upload-pages-artifact`, `path: site`), sans
 sous-module à initialiser.
+
+## Contenu du socle
+
+Fichiers identiques dans les trois sites, repris tels quels (octet pour octet) :
+
+- `css/theme.css` : la charte, en variables CSS ;
+- `js/ui/{onglets,preferences,infobulle,theme}.js` ;
+- `serve.mjs` : serveur de développement sans cache, qui sert le dossier courant.
+  Dans un cours : `"serve": "node socle/serve.mjs"` (lancé depuis `site/`) ;
+- `tests/preferences.test.js`.
+
+Tests du socle seul : `npm test`.

@@ -1,0 +1,9 @@
+{
+  "name": "ocots-site",
+  "private": true,
+  "type": "module",
+  "description": "Socle commun des sites interactifs des cours (sans étape de build).",
+  "scripts": {
+    "test": "node --test"
+  }
+}
