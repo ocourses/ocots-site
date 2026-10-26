@@ -5,6 +5,7 @@ name: Tests
 # réutilisable, appelé sur l'exemple sans publier.
 
 on:
+  workflow_call:
   pull_request:
   push:
     branches: [main]
