@@ -103,6 +103,10 @@ Tests ajoutés au socle (les cours n'en avaient pas) :
 Tests du socle seul : `npm test` (Node 22 ou plus). Serveur de développement :
 `npm run serve`.
 
+**`tests/` ne teste que ce qui est publié** (le code chargé par le navigateur) : il tourne aussi côté
+étudiant, où `socle/scripts/*` est exclu de la publication. Les outils de `scripts/` se testent avec
+les outils, en Python, à côté d'eux : `npm run test:outils`.
+
 Fichiers fusionnés après divergence (voir `CHANGELOG.md`, par fichier et par cours) :
 `js/ui/{katex,repere,format,controls,camera3d,vue3d}.js`,
 `js/briques/` (cartes, contenu, canevas, interaction), `js/core/ode.js`.
@@ -127,7 +131,10 @@ propre. Voir `docs/css.md`.
 ```bash
 scripts/residu-css.py STYLE_DU_COURS.css --site DOSSIER_SITE > cours.css   # le reste d'un cours
 scripts/residu-css.py STYLE_DU_COURS.css --nouveautes                       # ce que le socle lui apporte
-scripts/captures.py prendre DOSSIER_SITE SORTIE                             # captures avant/après
+scripts/captures.py prendre DOSSIER_SITE SORTIE [--tailles 1504x856 390x844]   # captures avant/après
 scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
 scripts/styles-calcules.py SITE_AVANT SITE_APRES 'illustration.html?id=x'   # styles calculés, page animée
 ```
+
+Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans interface (variable `CHROME`, sinon
+`google-chrome`, `chromium`, puis le chemin de macOS) et `serve.mjs` du socle, sur un port libre et sans cache.

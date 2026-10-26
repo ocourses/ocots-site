@@ -1,33 +1,35 @@
 #!/usr/bin/env python3
 """Captures d'écran des pages d'un site et comparaison avant/après.
 
-    scripts/captures.py prendre DOSSIER_SITE SORTIE [--largeur 1504 --hauteur 856]
+    scripts/captures.py prendre DOSSIER_SITE SORTIE [--tailles 1504x856 390x844 1504x600]
     scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
 
 `prendre` sert le site, découvre ses pages (l'accueil, les illustrations et
 les exemples disponibles de leurs catalogues) et enregistre une capture PNG
-de chacune avec Chrome sans interface. `comparer` donne, par page, le nombre
+de chacune avec Chrome sans interface, à chaque taille demandée (par défaut
+1504 × 856, la fenêtre de référence des conventions ; avec plusieurs tailles, un
+sous-dossier `LARGEURxHAUTEUR` par taille : 390x844 pour un téléphone, 1504x600
+pour une fenêtre basse). `comparer` donne, par page, le nombre
 de pixels qui diffèrent entre REFERENCE et APRES ; REFERENCE_BIS, une seconde
 prise de la même référence, mesure le bruit (animations, particules) : une page
 n'est signalée que si elle diffère plus d'APRES que de REFERENCE_BIS (plus
 20 pixels de tolérance). Le thème clair est forcé : la capture ne dépend pas du
 réglage d'apparence du système.
 
-Prérequis : Google Chrome (variable CHROME), ImageMagick (`compare`), accès à
+Prérequis : Chrome (voir navigateur.py), ImageMagick (`compare`), Node, accès à
 Internet (KaTeX est chargé depuis un CDN).
 """
 
 import argparse
 import concurrent.futures
-import os
 import re
 import subprocess
 import sys
-import time
 from pathlib import Path
 
+from navigateur import lance_chrome, servi
+
 TOLERANCE = 20   # pixels : l'anticrénelage d'un bord n'est pas un écart
-CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 
 def disponibles(catalogue):
@@ -53,42 +55,40 @@ def pages(site):
     return liste
 
 
+def taille(texte):
+    largeur, hauteur = texte.lower().split("x")
+    return int(largeur), int(hauteur)
+
+
 def prendre(args):
     site, sortie = Path(args.site).resolve(), Path(args.sortie)
-    sortie.mkdir(parents=True, exist_ok=True)
-    port = 8800 + os.getpid() % 900
-    serveur = subprocess.Popen([sys.executable, "-m", "http.server", "--directory", str(site), str(port)],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(1)
+    tailles = [taille(t) for t in args.tailles]
 
-    def une(page):
+    def une(url, dossier, page, dimensions):
         nom, chemin = page
-        fichier = sortie / f"{nom}.png"
+        fichier = dossier / f"{nom}.png"
         for _ in range(2):    # Chrome sans interface se bloque parfois : une reprise
             try:
-                subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                                "--blink-settings=preferredColorScheme=1",
-                                f"--window-size={args.largeur},{args.hauteur}", "--virtual-time-budget=12000",
-                                f"--screenshot={fichier}", f"http://localhost:{port}/{chemin}"],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=90)
+                lance_chrome(f"{url}/{chemin}", f"--screenshot={fichier}", largeur=dimensions[0], hauteur=dimensions[1])
             except subprocess.TimeoutExpired:
                 continue
             if fichier.exists():
                 break
         return nom, fichier.exists()
 
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-            resultats = list(pool.map(une, pages(site)))
-    finally:
-        serveur.terminate()
-    manque = [n for n, ok in resultats if not ok]
-    print(f"{len(resultats) - len(manque)} captures dans {sortie}" + (f" ; manquantes : {manque}" if manque else ""))
+    manque = []
+    with servi(site) as url, concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        for dimensions in tailles:
+            dossier = sortie / f"{dimensions[0]}x{dimensions[1]}" if len(tailles) > 1 else sortie
+            dossier.mkdir(parents=True, exist_ok=True)
+            resultats = pool.map(lambda page: une(url, dossier, page, dimensions), pages(site))
+            manque += [f"{dossier.name}/{nom}" for nom, ok in resultats if not ok]
+    total = len(pages(site)) * len(tailles) - len(manque)
+    print(f"{total} captures dans {sortie}" + (f" ; manquantes : {manque}" if manque else ""))
 
 
 def ecart(a, b):
-    r = subprocess.run(["compare", "-metric", "AE", "-fuzz", "1%", str(a), str(b), "null:"],
-                       capture_output=True, text=True)
+    r = subprocess.run(["compare", "-metric", "AE", "-fuzz", "1%", str(a), str(b), "null:"], capture_output=True, text=True)
     m = re.match(r"[\d.]+(?:e[+-]?\d+)?", r.stderr.strip())
     return round(float(m.group(0))) if m else -1
 
@@ -96,14 +96,15 @@ def ecart(a, b):
 def comparer(args):
     ref, bis, apres = (Path(p) for p in (args.reference, args.reference_bis, args.apres))
     signales = 0
-    for png in sorted(ref.glob("*.png")):
-        autre, bruit = apres / png.name, ecart(png, bis / png.name)
+    captures = sorted(ref.rglob("*.png"))
+    for png in captures:
+        relatif = png.relative_to(ref)
+        autre, bruit = apres / relatif, ecart(png, bis / relatif)
         d = ecart(png, autre) if autre.exists() else -1
         if d < 0 or d > bruit + TOLERANCE:
             signales += 1
-            print(f"{png.stem:50s} écart {d:8d} px (bruit {bruit})")
-    total = len(list(ref.glob("*.png")))
-    print(f"{total - signales}/{total} pages sans écart au-delà du bruit")
+            print(f"{relatif.with_suffix('').as_posix():50s} écart {d:8d} px (bruit {bruit})")
+    print(f"{len(captures) - signales}/{len(captures)} pages sans écart au-delà du bruit")
     sys.exit(1 if signales else 0)
 
 
@@ -113,8 +114,7 @@ def main():
     a = sub.add_parser("prendre")
     a.add_argument("site")
     a.add_argument("sortie")
-    a.add_argument("--largeur", type=int, default=1504)
-    a.add_argument("--hauteur", type=int, default=856)
+    a.add_argument("--tailles", nargs="+", default=["1504x856"], metavar="LARGEURxHAUTEUR")
     a.set_defaults(f=prendre)
     b = sub.add_parser("comparer")
     b.add_argument("reference")

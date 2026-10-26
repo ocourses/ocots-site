@@ -63,3 +63,8 @@ input[type='text'] {
 input[type='range'] {
   accent-color: var(--accent);
 }
+
+/* Formule et ponctuation qui la suit : jamais séparées par une fin de ligne. */
+.insecable {
+  white-space: nowrap;
+}

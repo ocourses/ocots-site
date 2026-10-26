@@ -62,10 +62,16 @@ morts), A 193 blocs (le simulateur ; 5 blocs morts).
 
 ### Règles que le socle ajoute à A et C
 
+Décision (relecture) : **adoptées pour tous**, sans réglage. M est la version la plus récente et ce sont des
+améliorations, pas des variantes ; le titre de panneau masqué l'est visuellement mais reste lu par les
+lecteurs d'écran. `scripts/residu-css.py --nouveautes` en donne la liste ; elle va dans la PR de migration
+de chaque cours, avec les captures avant/après, pour que l'enseignant voie ce qui change.
+
 `.carte-onglets [role='tabpanel'] > h2` (le titre du panneau, redondant avec l'onglet, est masqué),
 `.entete-barre > div:first-child`, `.rappel .katex-display`, `.rappel p:has(> .katex-display)`,
 `.zone-verdict`, `.hauteur-fixe` (deux règles de média), `button.bouton-lien` (et `:hover`),
-`canvas.toile + :is(.bloc-maths, .texte-fixe, .barre-legende, .note)`. Elles viennent de M.
+`canvas.toile + :is(.bloc-maths, .texte-fixe, .barre-legende, .note)`. Elles viennent de M. Pour A s'ajoute
+`.insecable` (`white-space: nowrap`, de C), que le `katex.js` du socle a besoin de voir défini.
 
 ## Vérification visuelle
 
@@ -73,37 +79,46 @@ morts), A 193 blocs (le simulateur ; 5 blocs morts).
 disponibles) à 1504 × 856, thème clair forcé, avant et après, et compte les pixels différents
 au-delà du bruit mesuré entre deux prises de la référence.
 
-Résultats (22, 19 et 19 pages) :
+Résultats (22, 19 et 19 pages ; serveur `serve.mjs` du socle, sans cache) :
 
 | Cours | Socle complet | Socle sans les règles nouvelles pour le cours |
 |-------|---------------|-----------------------------------------------|
-| M | **22 / 22** identiques | (sans objet : il les a toutes) |
-| C | 1 / 19 | **18 / 19** (reste : `pendule`, 1 114 px, animation) |
-| A | 5 / 19 | **13 / 19** (restent : 4 exemples du simulateur et `lyapunov`, de l'ordre du bruit ; `pendule-amorti`, voir ci-dessous) |
+| M | **21 / 22** (22 / 22 à d'autres prises, voir ci-dessous) | (sans objet : il les a toutes) |
+| C | 1 / 19 | **17 / 19** (restent : `cauchy`, 144 px, et `pendule`, une animation) |
+| A | 4 / 19 | **17 / 19** (restent : deux exemples du simulateur, animés) |
 
-- **M reproduit exactement l'existant** : le socle plus son `cours.css` redonnent les pages
-  pixel pour pixel. C'est la preuve que le découpage et le calcul du reste ne perdent rien.
+- **M reproduit l'existant** : le socle plus son `cours.css` redonnent les pages, sans écart de style
+  calculé pour chaque élément des pages examinées. La page qui diffère change d'une prise à l'autre.
+- **Les captures ne sont pas reproductibles à 100 %**, même sans rien changer : deux prises de la
+  même feuille « après » diffèrent sur `convergence-dominee` et `etagees` (autres pages à une autre
+  prise), et il en va de même avec les composants **concaténés en un seul fichier** (sans `@import`).
+  Le dessin d'un canevas dépend du moment où il est redessiné (`ResizeObserver`), pas de la feuille de
+  style. D'où le second critère : `scripts/styles-calcules.py`, qui compare les styles calculés
+  de chaque élément et donne le même verdict à chaque fois (0 élément différent sur `picard`,
+  `lyapunov`, le segway, `pendule-amorti`, `convergence-dominee` et les accueils d'A et C).
 - **« Socle complet » diffère pour A et C**, comme prévu : c'est l'effet des règles que M leur
   apporte (titre de panneau masqué, formules du rappel resserrées…). La colonne de droite
   neutralise ces seules règles (copie du socle sans elles) pour isoler le reste : les pages
   d'A et C redeviennent identiques, à quelques animations près.
-- **`pendule-amorti` (A), 12 419 px, stable d'une prise à l'autre** : `scripts/styles-calcules.py`
-  montre pourtant des styles calculés **identiques** pour chaque élément (comme pour `lyapunov`, le
-  segway, `picard`, les accueils d'A et de C). La différence vient donc du dessin d'un canevas
-  (moment du dessin, avec le chargement par `@import`), pas de la feuille de style. À rejouer à la
-  migration d'A, dans un navigateur.
 - Deux défauts trouvés et corrigés grâce à ces vérifications : un « ; » dans un commentaire CSS
   faisait perdre la règle qui suivait ; `unset` écrasait le `cursor: pointer` des liens (le
   navigateur le donne aux `a`), d'où `revert`.
 
 ## Limites
 
-- Fenêtre unique : 1504 × 856. Les conditions fines (`:has`, hauteur de fenêtre, mobile) ne
-  sont pas rejouées ; à faire à la migration de chaque cours.
+- Le résultat ci-dessus vaut pour une fenêtre de 1504 × 856. `captures.py prendre --tailles 1504x856
+  390x844 1504x600` prend aussi le téléphone et la fenêtre basse (règles de hauteur, `:has`) : à rejouer,
+  obligatoirement, avant la première migration (#464).
 - L'élagage du CSS mort lit des chaînes littérales : un nom de classe construit autrement serait
   jugé mort à tort. La liste des blocs écartés est affichée pour relecture.
 - Le CSS mort restant est conservé quand un seul de ses sélecteurs peut servir.
-- La remise à `revert` suppose qu'aucune autre règle du cours ne règle la même propriété sur le
-  même élément.
+- `revert` ne revient pas à « la règle précédente du cours » mais à la valeur du **navigateur** : il
+  annule donc aussi toute autre règle de l'auteur sur la même propriété et le même élément. Les styles
+  calculés le contrôlent en pratique. Si un cas réel se présente, ranger le socle dans un `@layer socle` et
+  neutraliser avec `revert-layer`, qui n'annule que l'apport du socle ; pas maintenant (KISS), et la
+  feuille KaTeX, chargée hors couche, l'emporterait alors sur les règles du socle qui visent `.katex-display`.
+- `@import` : le navigateur découvre les 9 composants en lisant `style.css` puis les demande en parallèle,
+  soit un aller-retour de plus. À mesurer (Lighthouse) à la migration de #464 ; ne pas lister les 9
+  `<link>` dans les gabarits : l'ordre de la cascade serait écrit à deux endroits.
 - Les captures contiennent un peu de bruit (animations, particules) : une page est signalée
   au-delà de ce bruit plus 20 pixels.

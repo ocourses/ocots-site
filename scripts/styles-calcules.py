@@ -12,16 +12,13 @@ chaque élément, et l'on compare. Code de sortie 1 s'il y a un écart.
 
 import html
 import json
-import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
-CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+from navigateur import lance_chrome, servi
 RELEVE = """<script>
 window.addEventListener('load', () => setTimeout(() => {
   const sortie = {};
@@ -43,22 +40,15 @@ window.addEventListener('load', () => setTimeout(() => {
 </script>"""
 
 
-def releve(site, page, port):
-    dossier = Path(tempfile.mkdtemp(prefix="styles-")) / "site"
-    shutil.copytree(site, dossier, ignore=shutil.ignore_patterns("node_modules", ".git"))
-    fichier = dossier / page.split("?")[0]
-    fichier.write_text(fichier.read_text().replace("</body>", RELEVE + "</body>"))
-    serveur = subprocess.Popen([sys.executable, "-m", "http.server", "--directory", str(dossier), str(port)],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(1)
-    try:
-        r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--blink-settings=preferredColorScheme=1",
-                            "--window-size=1504,856", "--virtual-time-budget=12000", "--dump-dom",
-                            f"http://localhost:{port}/{page}"], capture_output=True, text=True, timeout=120)
-    finally:
-        serveur.terminate()
-        shutil.rmtree(dossier.parent, ignore_errors=True)
-    m = re.search(r'<pre id="releve">(.*?)</pre>', r.stdout, re.S)
+def releve(site, page):
+    with tempfile.TemporaryDirectory(prefix="styles-") as dossier:
+        copie = Path(dossier) / "site"
+        shutil.copytree(site, copie, ignore=shutil.ignore_patterns("node_modules", ".git"))
+        fichier = copie / page.split("?")[0]
+        fichier.write_text(fichier.read_text().replace("</body>", RELEVE + "</body>"))
+        with servi(copie) as url:
+            sortie = lance_chrome(f"{url}/{page}", "--dump-dom", delai=120).stdout
+    m = re.search(r'<pre id="releve">(.*?)</pre>', sortie, re.S)
     return json.loads(html.unescape(m.group(1))) if m else {}
 
 
@@ -66,7 +56,7 @@ def main():
     avant, apres, *pages = sys.argv[1:]
     ecarts = 0
     for page in pages:
-        a, b = releve(avant, page, 9701), releve(apres, page, 9702)
+        a, b = releve(avant, page), releve(apres, page)
         diff = {k: {p: (a[k][p], b[k].get(p)) for p in a[k] if a[k][p] != b[k].get(p)} for k in a if k in b}
         diff = {k: v for k, v in diff.items() if v}
         manque = [k for k in a if k not in b]
