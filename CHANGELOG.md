@@ -24,11 +24,14 @@ Sens de la fusion : union des améliorations, après lecture des écarts.
 | `js/ui/format.js` | A + C + M | Ajouts seulement : `latexScientifique` (C) ; `chiffresEntiers`, `latexPositifFixe`, `latexNombreFinal`, `separateur`, `latexIntervalle` (M). |
 | `js/ui/controls.js` | A + C + M | **A, M** : le nom accessible d'une étiquette KaTeX n'inclut plus la source LaTeX répétée. `ajoutePas` : option `lis` (C), bornes relues à chaque pas par `limites` (C) ou `min`/`max` (M). `champ` : `bornes(min, max)` (C) et `fixeMax(max)` (M). |
 | `js/ui/camera3d.js` | A (= C) | Commentaire seul. |
-| `js/ui/vue3d.js` | C | **A** : `zmin` (défaut 0, les valeurs sous 0 sont ramenées à 0), `facettes`, `dessineFacettes`, `surfaces` ; `surface(f, options)` s'utilise comme avant. À vérifier sur la surface de Lyapunov. |
-| `js/illustrations/commun.js` | A + C + M, moins le propre à un cours | **A, C, M** : `boutonAide` (bulle d'aide d'une carte), `reinitialise()` du zoom. **A, C** : la zone d'un verdict réserve deux lignes (`.zone-verdict`, seulement dans M aujourd'hui, voir CSS). |
+| `js/ui/vue3d.js` | C | **A** : `zmin` (défaut 0, les valeurs sous 0 sont ramenées à 0), `facettes`, `dessineFacettes`, `surfaces` ; `surface(f, options)` s'utilise comme avant. Sans effet pour A : son seul usage, la surface de Lyapunov, trace des fonctions positives (l'ancienne projection supposait déjà [0, zmax]). Un domaine vide (`zmax ≤ zmin`) lève une `RangeError` au lieu de dessiner `NaN`. |
+| `js/briques/` (`commun.js` d'avant) | A + C + M, moins le propre à un cours | Rangé dans `js/briques/` et découpé : `cartes.js`, `contenu.js`, `toile.js`, `interaction.js`, réunis par `commun.js` (`export *`). **A, C, M** : `boutonAide` (bulle d'aide d'une carte), `reinitialise()` du zoom, identifiant de `repliable` déterministe (`repliable-1`…). **Migration** : `paragraphe(parent, texte, 'verdict')` devient `verdict(parent, texte)` (zone de deux lignes `.zone-verdict`, seulement dans M aujourd'hui, voir CSS) : 3 appels dans A, 32 dans M, aucun dans C. |
+| `js/ui/canevas.js` | nouveau | `ajusteCanevas`, extrait de `Repere.prepare` et `Vue3D.prepare` qui le dupliquaient. `graduations` renvoie `[]` pour un intervalle vide ou à l'envers (elle bouclait sur `NaN`). |
 | `js/core/ode.js` | A (= C) | Aucun. |
 
 ### Restent dans le cours (un seul usage)
+
+Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
 
 - `automatique` : `simule` (RK4 sur une trajectoire, importe `core/ode.js`). `calcul-differentiel-edo` en a une copie sans appelant : à supprimer.
 - `calcul-differentiel-edo` : `champsPoint` (deux champs pour un point glissé).

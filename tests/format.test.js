@@ -6,15 +6,21 @@ import assert from 'node:assert/strict';
 
 import {
   chiffresEntiers,
+  etiquettesAxe,
+  latexComplexe,
   latexIntervalle,
+  latexNombre,
   latexNombreFinal,
   latexNombreFixe,
   latexPositifFixe,
   latexScientifique,
   latexVecteur,
   nombreCourt,
+  nombreScientifique,
   polynomeLatex,
   separateur,
+  texte,
+  typographie,
 } from '../js/ui/format.js';
 
 test('nombreCourt : 4 chiffres, virgule française, notation scientifique aux extrêmes', () => {
@@ -79,4 +85,48 @@ test('latexScientifique : notation scientifique aux extrêmes, nombre ordinaire 
   assert.equal(latexScientifique(12345678, 3), '1{,}23 \\cdot 10^{7}');
   assert.equal(latexScientifique(2.5, 3), '2{,}5');
   assert.equal(latexScientifique(Infinity), '+\\infty');
+});
+
+test('latexScientifique : l’arrondi qui donne 10 passe à la puissance suivante', () => {
+  assert.equal(latexScientifique(9.9996e-6, 3), '1 \\cdot 10^{-5}');
+  assert.equal(latexScientifique(-9.9996e7, 3), '-1 \\cdot 10^{8}');
+});
+
+test('texte : trois chiffres significatifs, virgule et vrai moins', () => {
+  assert.equal(texte(3.14159), '3,14');
+  assert.equal(texte(-2.5), '−2,5');
+  assert.equal(texte(0), '0');
+  assert.equal(texte(-1e-15), '0');
+});
+
+test('latexNombre : virgule LaTeX, zéro négatif écrit 0', () => {
+  assert.equal(latexNombre(2.5), '2{,}5');
+  assert.equal(latexNombre(-0.0004), '-0{,}0004');
+  assert.equal(latexNombre(-0), '0');
+});
+
+test('latexComplexe : partie réelle, signe et partie imaginaire', () => {
+  assert.equal(latexComplexe({ re: 1, im: 0 }), '1');
+  assert.equal(latexComplexe({ re: 1, im: 2 }), '1 + 2\\,i');
+  assert.equal(latexComplexe({ re: 1, im: -2 }), '1 - 2\\,i');
+  assert.equal(latexComplexe({ re: 0, im: 2 }).trim(), '2\\,i');
+  assert.equal(latexComplexe({ re: 0, im: -2 }).trim(), '- 2\\,i');
+});
+
+test('typographie : espace insécable avant « : ; ! ? » et dans les guillemets', () => {
+  assert.equal(typographie('a : b'), 'a\u00a0: b');
+  assert.equal(typographie('« oui »'), '«\u00a0oui\u00a0»');
+});
+
+test('nombreScientifique : signe, mantisse et exposant de largeur constante', () => {
+  assert.equal(nombreScientifique(0.0123), '+1,23e−02');
+  assert.equal(nombreScientifique(-12345), '−1,23e+04');
+  assert.equal(nombreScientifique(0), '+0,00e+00');
+  assert.equal(nombreScientifique(Infinity).length, nombreScientifique(1).length);
+});
+
+test('etiquettesAxe : même nombre de décimales, notation scientifique aux extrêmes', () => {
+  assert.deepEqual(etiquettesAxe([0, 0.5, 1]), ['0', '0,5', '1,0']);
+  assert.deepEqual(etiquettesAxe([0, 0, 0]), ['0', '0', '0']);
+  assert.ok(etiquettesAxe([0, 2e-5, 4e-5]).every((t) => t === '0' || /e|^\d/.test(t)));
 });

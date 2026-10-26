@@ -8,10 +8,16 @@
 // triées toutes ensemble, pour qu'une surface passe devant l'autre là où il faut.
 
 import { Camera } from './camera3d.js';
+import { ajusteCanevas } from './canevas.js';
 import { couleurs } from './theme.js';
+
+function verifieDomaine(zmax, zmin) {
+  if (!(zmax > zmin)) throw new RangeError(`Vue3D : zmax (${zmax}) doit dépasser zmin (${zmin})`);
+}
 
 export class Vue3D {
   constructor(canvas, { x, y, zmax, zmin = 0, azimut = -0.7, elevation = 0.5, rappel = () => {} }) {
+    verifieDomaine(zmax, zmin);
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.domaine = { x, y, zmax, zmin };
@@ -19,28 +25,20 @@ export class Vue3D {
   }
 
   fixeDomaine(x, y, zmax, zmin = 0) {
+    verifieDomaine(zmax, zmin);
     this.domaine = { x, y, zmax, zmin };
   }
 
   prepare() {
-    const rect = this.canvas.getBoundingClientRect();
-    if (rect.width < 2 || rect.height < 2) return false;
-    const dpr = window.devicePixelRatio || 1;
-    const w = Math.round(rect.width * dpr);
-    const h = Math.round(rect.height * dpr);
-    if (this.canvas.width !== w || this.canvas.height !== h) {
-      this.canvas.width = w;
-      this.canvas.height = h;
-    }
+    const rect = ajusteCanevas(this.canvas, this.ctx);
+    if (!rect) return false;
     this.rect = rect;
     this.col = couleurs();
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.ctx.clearRect(0, 0, rect.width, rect.height);
     this.echelle = Math.min(rect.width, rect.height) / 3.4;
     return true;
   }
 
-  // Coordonnées du cube [−1, 1]² × [0, 1,2] puis projection : { px, py, prof }.
+  // Coordonnées du cube [−1, 1]² × [−0,6 ; 0,6] puis projection : { px, py, prof }.
   projette(x, y, z) {
     const { x: [x0, x1], y: [y0, y1], zmax, zmin } = this.domaine;
     const u = (2 * (x - x0)) / (x1 - x0) - 1;
@@ -76,15 +74,14 @@ export class Vue3D {
     return facettes;
   }
 
-  // Dessine des facettes, de la plus lointaine à la plus proche ; teinte
-  // selon la hauteur, du foncé (bas) au clair (haut).
+  // Dessine des facettes, de la plus lointaine à la plus proche (le tableau reçu
+  // n'est pas modifié) ; teinte selon la hauteur, du foncé (bas) au clair (haut).
   dessineFacettes(facettes) {
     const { zmax, zmin } = this.domaine;
-    facettes.sort((a, b) => b.prof - a.prof);
     const ctx = this.ctx;
     ctx.save();
     ctx.lineWidth = 0.6;
-    for (const { q, z, teinte, alpha } of facettes) {
+    for (const { q, z, teinte, alpha } of facettes.toSorted((a, b) => b.prof - a.prof)) {
       const t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin)));
       const l = 38 + 45 * t;
       ctx.fillStyle = `hsla(${teinte}, 55%, ${l}%, ${alpha})`;

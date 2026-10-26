@@ -105,13 +105,15 @@ Tests du socle seul : `npm test` (Node 22 ou plus). Serveur de développement :
 
 Fichiers fusionnés après divergence (voir `CHANGELOG.md`, par fichier et par cours) :
 `js/ui/{katex,repere,format,controls,camera3d,vue3d}.js`,
-`js/illustrations/commun.js`, `js/core/ode.js`.
+`js/briques/` (cartes, contenu, canevas, interaction), `js/core/ode.js`.
 
 Vérifier qu'une fusion ne casse aucun cours :
 
 ```bash
-scripts/verifie-cours.py     # COURS=~/Courses par défaut
+scripts/verifie-cours.py     # COURS=~/Courses par défaut ; code de sortie 1 en cas de régression
 ```
 
-Le script pose les fichiers du socle sur une copie de chaque `site/`, remet
-dans `commun.js` le code propre au cours, et rejoue les tests du cours.
+Le script pose les fichiers du socle sur une copie de chaque `site/`, remplace son
+`commun.js` par une façade (briques du socle + code propre au cours, listé dans
+`scripts/propre-aux-cours.json`), et rejoue les tests du cours. Il compare les **noms**
+des tests réussis avant et après : un test manquant ou en échec fait échouer le script.
