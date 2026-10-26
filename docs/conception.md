@@ -175,13 +175,22 @@ sont identiques.
 ## KaTeX
 
 Le chargement de KaTeX (CSS et script) est fait par le socle avant tout
-rendu, depuis le CDN, comme aujourd'hui. La version **et** l'empreinte
-(`integrity`, avec `crossorigin="anonymous"`) sont écrites une seule fois, dans
-le chargeur : chargement reproductible, refusé si le fichier servi change. Le
-chargeur ne fait rien si `window.katex` existe déjà.
+rendu, depuis le CDN, comme aujourd'hui : `chargeKatex()` de `js/ui/katex.js`.
+La version **et** l'empreinte (`integrity`, avec `crossorigin="anonymous"`)
+sont écrites une seule fois, dans `KATEX` à côté du chargeur : chargement
+reproductible, refusé si le fichier servi change.
 
-Vérifié par un essai jetable (accueil minimal, Chrome sans interface) : le
-module du cours est chargé, la formule rendue.
+- La promesse rend `window.katex` une fois la feuille **et** le script chargés :
+  pas de formule rendue sans sa feuille.
+- La feuille de KaTeX passe en tête de `<head>`, avant celles du site, comme
+  dans les pages d'aujourd'hui : `theme.css` et `cours.css` peuvent la
+  redéfinir.
+- Idempotent : rien n'est inséré si `window.katex` existe déjà, et deux appels
+  pendant le chargement partagent la même promesse.
+- Un fichier refusé (empreinte, réseau) rejette la promesse avec son adresse.
+
+Vérifié par un essai jetable (Chrome sans interface) : avec les empreintes,
+la formule est rendue ; avec une empreinte fausse, le chargement est rejeté.
 
 ## Points d'extension
 

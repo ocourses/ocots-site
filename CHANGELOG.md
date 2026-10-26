@@ -8,6 +8,15 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+### Chargement de KaTeX (ocots-site#7)
+
+`chargeKatex()` dans `js/ui/katex.js` : KaTeX 0.16.11 (version inchangée)
+depuis jsDelivr, avec empreintes SRI. **Migration** : les pages du cours
+retirent leurs deux balises KaTeX (`<link>` et `<script>`) ; le démarrage des
+pages du socle (étape suivante de ocots-site#7) attend `chargeKatex()` avant
+tout rendu. Une page à soi (exemple.html d'A) l'appelle elle-même :
+`await chargeKatex()`.
+
 ### Fichiers repris (étape 1)
 
 `css/theme.css`, `js/ui/{onglets,preferences,infobulle,theme}.js`, `serve.mjs` :

@@ -1,5 +1,5 @@
 // Faux DOM minimal pour les tests sous Node : juste ce qu'emploient les modules
-// du socle (éléments, textes, attributs, `dataset`, sélecteurs simples,
+// du socle (`head` et `body`, éléments, textes, attributs, `dataset`, sélecteurs simples,
 // événements qui remontent, `focus`, TreeWalker de textes). Écrit à la main
 // plutôt qu'une dépendance npm : les tests du socle tournent aussi dans le
 // dépôt étudiant, avec un simple `node --test`.
@@ -262,6 +262,7 @@ class Document extends Cible {
   constructor() {
     super();
     this.documentElement = new Element(this, 'html');
+    this.head = this.documentElement.appendChild(new Element(this, 'head'));
     this.body = this.documentElement.appendChild(new Element(this, 'body'));
     this.documentElement.parentNode = this;
     this.activeElement = this.body;
