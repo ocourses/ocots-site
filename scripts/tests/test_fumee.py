@@ -31,6 +31,7 @@ class Console(unittest.TestCase):
     def test_un_message_ordinaire_ne_l_est_pas(self):
         self.assertFalse(fumee.ERREUR.search('[1:2:1026/231321:INFO:CONSOLE:7] "chargé", source: http://localhost/p.js (7)'))
         self.assertFalse(fumee.ERREUR.search("[1:2:1026/231321:ERROR:gpu_process_host.cc:1] GPU"))
+        self.assertFalse(fumee.ERREUR.search('[1:2:1026/231321:INFO:CONSOLE:7] "404 éléments", source: http://localhost/p.js (7)'))
 
 
 @unittest.skipIf(CHROME_ABSENT, "Chrome introuvable (variable CHROME)")

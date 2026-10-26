@@ -9,13 +9,23 @@ que la console du navigateur ne contient aucune erreur. Demande le réseau (KaTe
 chargé depuis un CDN). Code de sortie 1 au premier écart.
 """
 
+import os
 import re
 import sys
+from pathlib import Path
 
 from navigateur import SOCLE, lance_chrome, servi
 
 PAGE_PAR_DEFAUT = "examples/minimal/index.html"
-ERREUR = re.compile(r"CONSOLE[^\n]*(Uncaught|Failed to load|net::ERR|404|SyntaxError|TypeError|ReferenceError)", re.I)
+ERREUR = re.compile(
+    r"CONSOLE[^\n]*(Uncaught|Failed to load|net::ERR|status of 404|"
+    r"SyntaxError|TypeError|ReferenceError)",
+    re.I,
+)
+EXIGE_CHROME = os.environ.get("EXIGE_CHROME") == "1"
+
+if EXIGE_CHROME and not Path(navigateur.chrome()).exists():
+    raise RuntimeError("Chrome introuvable alors que EXIGE_CHROME=1")
 
 
 def verifie(url, page):

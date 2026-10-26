@@ -50,6 +50,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - run: echo "EXIGE_CHROME=1" >> "$GITHUB_ENV"
       - run: npm test
         working-directory: examples/minimal
       - run: scripts/fumee.py

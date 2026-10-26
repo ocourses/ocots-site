@@ -45,7 +45,8 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   aussi les dossiers du cours qui portent ce nom) :
 
   ```toml
-  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*"]
+  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
+    "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
   ```
 
 - **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
