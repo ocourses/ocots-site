@@ -55,3 +55,13 @@ Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade
 - `js/illustration.js` : relève de la configuration (#7).
 - `js/core/dim2.js`, `js/illustrations/{plan-trace-det,portraits}.js` : sans test autonome (`dim2`), ou dépendants de la décision sur les briques d'illustration.
 - `illustration.html` : voir la conception.
+
+### Caractérisation et briques de systèmes linéaires
+
+- `js/core/dim2.js` est repris dans le socle avec des tests de caractérisation
+  couvrant les onze cas du TD1, les spectres réels/complexes, les matrices
+  doubles et compagnons, l'exponentielle et les directions propres.
+- `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont extraits
+  dans le socle. Les cours gardent temporairement leurs copies et leurs
+  imports locaux : leur migration, avec suppression des copies, reste à faire
+  dans `automatique-enseignants#428` et `calcul-differentiel-edo-enseignants#144`.

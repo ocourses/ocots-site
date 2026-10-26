@@ -139,3 +139,24 @@ scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 
 
 Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans interface (variable `CHROME`, sinon
 `google-chrome`, `chromium`, puis le chemin de macOS) et `serve.mjs` du socle, sur un port libre et sans cache.
+
+## Briques de systèmes linéaires
+
+`js/core/dim2.js`, `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont
+partagés par `automatique` et `calcul-differentiel-edo`. Les tests de caractérisation
+de `dim2` figent les onze cas du TD1, les spectres, l'exponentielle et les directions
+propres avant la migration des cours.
+
+La dépendance de migration est explicite :
+
+```text
+dim2 + tests
+    -> plan-trace-det + portraits dans js/briques/
+    -> migration de calcul-differentiel-edo-enseignants#144
+    -> migration d'automatique-enseignants#428
+```
+
+Cette PR extrait les fichiers du socle sans modifier encore les dépôts des cours.
+Les cours gardent donc temporairement leurs copies et leurs imports locaux ; chaque
+PR de migration devra remplacer la copie par une façade `commun.js` ou un import du
+socle, vérifier ses tests et supprimer ce qui est devenu redondant.
