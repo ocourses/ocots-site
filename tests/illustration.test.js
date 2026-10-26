@@ -47,12 +47,14 @@ test('illustration : introuvable ou annoncée, la page le dit et ne charge rien'
     assert.equal($('page').hidden, true);
     assert.equal($('introuvable').hidden, false);
     assert.deepEqual(charges, []);
+    assert.equal($('page').ownerDocument.body.dataset.ok, '1', 'la page a démarré');
   }
 });
 
 test('illustration : titres de la page, du fil d’Ariane et de l’onglet, depuis le catalogue et la configuration', async () => {
   const { $, document, charges } = await page();
   assert.deepEqual(charges, ['a']);
+  assert.equal(document.body.dataset.ok, '1');
   assert.equal(document.title, 'Illustration A · Cours factice');
   assert.equal($('titre').textContent, 'Illustration A');
   assert.equal($('source').textContent, 'Poly, 1.1');

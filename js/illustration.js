@@ -5,6 +5,8 @@
 // préférences d'affichage gardées dans le navigateur sous
 // `<config.id>.illustration.<id>`.
 //
+// Une fois la page remplie, `<body>` porte `data-ok="1"` (scripts/fumee.py).
+//
 // Le contrat du module (monte, etat, choix, preferences, rappel, essais, termes)
 // et les `outils` passés à `monte` sont décrits dans docs/conception.md
 // (« Contrat d'un module d'illustration ») et vérifiés par `verifieCours`.
@@ -110,6 +112,7 @@ export async function demarreIllustration(config) {
     $('titre').textContent = 'Illustration introuvable';
     $('page').hidden = true;
     $('introuvable').hidden = false;
+    document.body.dataset.ok = '1';
     return;
   }
   const { theme, illustration } = trouvee;
@@ -195,4 +198,5 @@ export async function demarreIllustration(config) {
     initial: outils.preferences.valeurs.onglet,
     change: (onglet) => outils.preferences.change({ onglet }),
   });
+  document.body.dataset.ok = '1';
 }

@@ -30,6 +30,7 @@ test('accueil : titres, sous-titre et dépôt des issues de chaque cours, avec l
     assert.equal(document.getElementById('titre').textContent, `${config.titre} : explorer le cours`);
     assert.equal(document.getElementById('sous-titre').textContent, config.sousTitre);
     assert.equal(document.getElementById('issues').href, `https://github.com/ocourses/${config.id}/issues`);
+    assert.equal(document.body.dataset.ok, '1');
   }
 });
 
@@ -76,4 +77,5 @@ test('accueil : une configuration fausse lève, sans rien remplir', async () => 
   const { document } = installePage('index.html');
   await assert.rejects(demarreAccueil({ ...coursFactice().config, titre: '' }), /configuration\.titre/);
   assert.equal(document.getElementById('titre').textContent, '');
+  assert.equal(document.body.dataset.ok, undefined);
 });

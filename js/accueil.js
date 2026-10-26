@@ -2,6 +2,9 @@
 // l'ordre du catalogue, avec ses illustrations. `demarreAccueil(config)` remplit le
 // gabarit à partir de site.config.js.
 //
+// Une fois la page remplie (KaTeX chargé), `<body>` porte `data-ok="1"` : le
+// test de fumée (scripts/fumee.py) l'attend.
+//
 // Chaque thème est une section `#theme-<id>` : un cours peut y greffer un bloc à
 // lui, après `await demarreAccueil(config)` (docs/conception.md, « Points
 // d'extension »).
@@ -82,4 +85,5 @@ export async function demarreAccueil(config) {
   // Retour depuis une page : on revient à sa carte (les cartes sont créées par ce
   // script, le navigateur ne sait pas faire défiler vers l'ancre tout seul).
   if (location.hash) $(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView({ block: 'center' });
+  document.body.dataset.ok = '1';
 }
