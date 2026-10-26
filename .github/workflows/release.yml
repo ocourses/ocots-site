@@ -1,0 +1,48 @@
+name: Release
+
+# Un tag vX.Y.Z poussé crée la release GitHub. Toute la CI doit être verte
+# avant gh release create : le workflow de tests est celui des PR.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    with:
+      deployer: false
+
+  release:
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Le tag porte sur main
+        run: |
+          git fetch origin main --quiet
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
+            echo "le tag n'est pas posé sur un commit de main"; exit 1; }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Version de package.json = tag
+        run: |
+          paquet="v$(node -p "require('./package.json').version")"
+          test "$paquet" = "$GITHUB_REF_NAME" || {
+            echo "package.json annonce $paquet, le tag est $GITHUB_REF_NAME"; exit 1; }
+      - run: .github/scripts/notes-de-version "$GITHUB_REF_NAME" > notes.md
+      - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
