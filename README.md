@@ -8,3 +8,75 @@ déclare ce qui le distingue dans `site.config.js` et étend le socle sans le fo
 
 Suivi du chantier : [#1](https://github.com/ocourses/ocots-site/issues/1).
 Conception : [`docs/conception.md`](docs/conception.md).
+
+## Intégrer le socle dans un cours
+
+Option retenue : **sous-module épinglé sur un tag**, dans `site/socle/`. Une
+copie vendorisée a le même effet côté étudiant, mais fait apparaître chaque
+fichier changé dans les diffs du dépôt enseignant ; le sous-module n'y laisse
+qu'une ligne (le gitlink).
+
+```bash
+git submodule add https://github.com/ocourses/ocots-site site/socle
+git -C site/socle checkout vX.Y.Z
+git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle ocots-site vX.Y.Z"
+```
+
+- **URL en HTTPS**, pas en SSH (le dépôt est public) : une CI ou un clone sans
+  clé n'a rien à configurer.
+- **Chemins** : les gabarits du cours importent `./socle/js/...` et lient
+  `socle/css/...`. `serve.mjs` (du socle) et `node --test` (lancé dans `site/`)
+  résolvent donc le socle comme le navigateur. Après un clone :
+  `git submodule update --init`.
+- **Garde** : dans le `package.json` du cours, un `pretest` dit clairement que
+  le sous-module n'est pas initialisé, au lieu d'une erreur de module
+  introuvable (une CI qui clone sans `submodules:` tombe sur ce cas) :
+
+  ```json
+  "pretest": "test -f socle/package.json || { echo 'Socle absent : git submodule update --init' >&2; exit 1; }"
+  ```
+
+- **Publication** : `ocots-publication` ≥ v1.2.0 copie les fichiers du
+  sous-module dans le dépôt étudiant (ni `.git` ni `.gitmodules` ne sont
+  copiés) ; le workflow du dépôt étudiant n'initialise donc rien. Chaque cours
+  épingle son sous-module `publication/` à v1.2.0 ou plus. Les outils et la
+  documentation du socle ne servent pas à l'étudiant : les exclure dans
+  `publication.toml`, par leur chemin (un motif nu comme `scripts` exclurait
+  aussi les dossiers du cours qui portent ce nom) :
+
+  ```toml
+  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*"]
+  ```
+
+- **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
+  sont publiés avec lui et tournent donc côté étudiant. Un test du socle ne
+  doit dépendre d'aucun fichier du cours.
+- **Montée de version** : `git -C site/socle checkout vX.Y.Z`, puis commit du
+  gitlink, puis publication.
+
+### Vérifier la chaîne
+
+```bash
+scripts/essai-integration.sh [chemin/vers/ocots-publication]
+```
+
+Le script monte, dans un répertoire temporaire, un socle factice, un dépôt
+enseignant, un dépôt étudiant et son origine. Il vérifie, et échoue au premier
+écart :
+
+1. qu'un clone enseignant sans sous-module initialisé fait échouer `npm test`
+   avec le message de la garde ;
+   et que `publier-etudiant` refuse d'en publier (« sous-module non
+   initialisé ») : sinon, le miroir viderait `site/socle/` du dépôt étudiant ;
+2. que `publier-etudiant` copie les fichiers du sous-module, sans `.git`, sans
+   `.gitmodules` ni les dossiers exclus du socle, mais avec les dossiers du
+   cours de même nom ;
+3. que `npm test` passe dans le dépôt étudiant ;
+4. que le site servi s'affiche dans Chrome sans interface (module du cours
+   chargé, KaTeX rendu ; étape ignorée sans Chrome, et qui demande le réseau) ;
+5. qu'une montée de version du socle ne change que le gitlink du dépôt
+   enseignant.
+
+Rien ne touche GitHub. Le script ne couvre pas le déploiement GitHub Pages
+lui-même : `site.yml` du dépôt étudiant publie `site/` tel quel
+(`upload-pages-artifact`, `path: site`), sans sous-module à initialiser.
