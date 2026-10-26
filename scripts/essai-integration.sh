@@ -17,6 +17,10 @@
 # est ignorée. PORT=… change le port du serveur (8765 par défaut).
 set -eu
 
+# publier-etudiant commite lui-même : une identité, si le poste (ou la CI) n'en a pas.
+export GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-essai} GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-essai@essai}
+export GIT_COMMITTER_NAME=${GIT_COMMITTER_NAME:-essai} GIT_COMMITTER_EMAIL=${GIT_COMMITTER_EMAIL:-essai@essai}
+
 PUBLICATION=${1:-$(dirname "$0")/../../ocots-publication}
 PE="$PUBLICATION/bin/publier-etudiant"
 [ -f "$PE" ] || { echo "publier-etudiant introuvable : $PE (passer le chemin d'ocots-publication en argument)" >&2; exit 1; }
