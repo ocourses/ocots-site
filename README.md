@@ -45,7 +45,8 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   aussi les dossiers du cours qui portent ce nom) :
 
   ```toml
-  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*"]
+  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
+    "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
   ```
 
 - **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
@@ -158,3 +159,18 @@ scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 
 
 Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans interface (variable `CHROME`, sinon
 `google-chrome`, `chromium`, puis le chemin de macOS) et `serve.mjs` du socle, sur un port libre et sans cache.
+
+## CI et déploiement
+
+- **CI du socle** (`.github/workflows/tests.yml`) : `npm test` (Node 22 et 24), `npm run test:outils`,
+  un cours minimal qui consomme le socle (`examples/minimal/` : ses tests, puis `scripts/fumee.py`, la page
+  ouverte dans Chrome sans interface, sans erreur de console), l'essai d'intégration
+  (`scripts/essai-integration.sh`, avec `ocots-publication` v1.2.0) et le workflow Pages ci-dessous, appelé sur
+  l'exemple sans publier.
+- **Workflow Pages réutilisable** (`.github/workflows/site.yml`) : les tests du site (`npm test` dans son
+  dossier), puis la publication sur GitHub Pages hors pull request. Paramètres : `dossier` (défaut `site`),
+  `node-version` (22), `submodules` (faux : le dépôt étudiant n'en a pas), `deployer` (vrai). Un dépôt étudiant
+  l'appelle avec `modeles/site.yml`, **épinglé par tag** (`@vX.Y.Z`), en accordant `pages: write` et
+  `id-token: write`. Le fichier du dépôt étudiant est publié depuis le dépôt enseignant
+  (`etudiant/.github/workflows/site.yml`) : le remplacer par ce modèle fait partie de la migration d'un cours.
+- Pas encore vérifié ici : le schéma de `site.config.js` (il arrive avec ocots-site#7).
