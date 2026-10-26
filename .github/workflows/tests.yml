@@ -1,0 +1,81 @@
+name: Tests
+
+# CI du socle : ses tests, ses outils, un cours minimal qui le consomme, l'essai
+# d'intégration (sous-module, publication, site servi) et le workflow Pages
+# réutilisable, appelé sur l'exemple sans publier.
+
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  socle:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+
+  outils:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm run test:outils
+
+  cours-minimal:
+    # Un cours qui importe le socle : ses tests, puis la page dans Chrome sans interface.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: echo "EXIGE_CHROME=1" >> "$GITHUB_ENV"
+      - run: npm test
+        working-directory: examples/minimal
+      - run: scripts/fumee.py
+
+  integration:
+    # Sous-module, publier-etudiant, npm test côté étudiant, site servi (essai-integration.sh).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: git clone --quiet --branch v1.2.0 https://github.com/ocourses/ocots-publication "$RUNNER_TEMP/ocots-publication"
+      - run: scripts/essai-integration.sh "$RUNNER_TEMP/ocots-publication"
+
+  workflow-pages:
+    # Le workflow réutilisable, sur ce dépôt même : ses tests, sans publier.
+    uses: ./.github/workflows/site.yml
+    permissions:
+      contents: read
+      pages: write      # le job de publication, sauté ici, les demande : l'appelant doit les accorder
+      id-token: write
+    with:
+      dossier: examples/minimal
+      deployer: false
