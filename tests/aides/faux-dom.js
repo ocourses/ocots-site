@@ -110,7 +110,7 @@ class Element extends Noeud {
     this.tagName = balise.toUpperCase();
     this.childNodes = [];
     this.attributs = new Map();
-    this.style = {};
+    this.style = { setProperty: (nom, v) => (this.style[nom] = v) };
     this.hidden = false;
     this.tabIndex = -1;
     this.dataset = new Proxy(
@@ -133,6 +133,15 @@ class Element extends Noeud {
         return force;
       },
     };
+  }
+
+  // Comme un champ de saisie : la valeur est toujours du texte.
+  get value() {
+    return this.valeur ?? '';
+  }
+
+  set value(v) {
+    this.valeur = String(v);
   }
 
   get className() {
@@ -297,10 +306,23 @@ class Document extends Cible {
   }
 }
 
-// Installe un document neuf (et `NodeFilter`, `window`) dans globalThis ; le renvoie.
+// `new Event('change')`, comme dans un navigateur ; celui de Node a une cible en
+// lecture seule, que `dispatchEvent` ne peut pas renseigner.
+class FauxEvenement {
+  constructor(type, options = {}) {
+    Object.assign(this, evenement(type, { bubbles: false, ...options }));
+  }
+}
+
+// Installe un document neuf (et `NodeFilter`, `Event`, `window`) dans globalThis ; le renvoie.
 export function installeDom() {
   const document = new Document();
-  Object.assign(globalThis, { document, NodeFilter, window: { innerWidth: 1024, innerHeight: 768 } });
+  Object.assign(globalThis, {
+    document,
+    NodeFilter,
+    Event: FauxEvenement,
+    window: { innerWidth: 1024, innerHeight: 768, devicePixelRatio: 1 },
+  });
   return document;
 }
 
@@ -314,4 +336,10 @@ export function el(balise, attributs = {}, ...enfants) {
   }
   e.append(...enfants);
   return e;
+}
+
+// `getComputedStyle` factice : chaque variable CSS vaut `valeur(nom)` (son nom par
+// défaut). Pour les modules qui lisent la charte (`couleurs()` de theme.js).
+export function installeStyleCalcule(valeur = (nom) => nom) {
+  globalThis.getComputedStyle = () => ({ getPropertyValue: valeur });
 }

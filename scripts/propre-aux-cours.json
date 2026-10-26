@@ -1,0 +1,17 @@
+{
+  "automatique": {
+    "imports": ["import { rk4 } from '../core/ode.js';"],
+    "briques": [],
+    "blocs": ["simule"]
+  },
+  "calcul": {
+    "imports": ["import { champ } from '../ui/controls.js';"],
+    "briques": [],
+    "blocs": ["champsPoint"]
+  },
+  "mesure": {
+    "imports": [],
+    "briques": ["choixRadios", "glisse"],
+    "blocs": ["choisitIndice", "EXPOSANTS", "puissance10", "echelleLog", "axesLog", "choixEchelle"]
+  }
+}
