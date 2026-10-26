@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Extrait de CHANGELOG.md la section d'une version, pour la release GitHub.
 
-    .github/scripts/notes-de-version v2.0.0 > notes.md
+    .github/scripts/notes-de-version v0.1.0 > notes.md
 
-Sortie 1 si la section `## v0.1.0` est absente : on ne publie pas une version
+Sortie 1 si la section `## vX.Y.Z` est absente : on ne publie pas une version
 que le CHANGELOG ne décrit pas.
 """
 
