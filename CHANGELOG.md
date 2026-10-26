@@ -42,6 +42,20 @@ espacement sous un canevas, `.entete-barre > div:first-child`. Les six règles q
 (`.entete-actions`, `a.bouton-lien`, `.verdict`, `.legende-courbes`, `.barre-legende`,
 `.texte-fixe`) gardent leur forme actuelle dans le `cours.css` d'A et C.
 
+### Configuration et parcours (ocots-site#7)
+
+Ajouts : `js/config.js` (`valideConfig`, `verifieCours`), `js/catalogue.js` (`trouve`, `disponibles`),
+`js/parcours.js`. **Migration de chaque cours** :
+
+- `trouve` et le parcours prennent leurs données en argument : `trouve(config.themes, id)`,
+  `installeNavigation(parcours(config), genre, id)` (le `parcours.js` du cours disparaît) ;
+- le test « catalogue : identifiants uniques, modules présents… » du cours est remplacé par
+  `verifieCours(config)`, plus strict : une clé inconnue, ou un essai dont un réglage ou une préférence
+  n'a pas le type de sa valeur par défaut, est une faute. Les trois cours passent tels quels ;
+- **A** : le drapeau `simulateur: true` sort du catalogue (clé inconnue) ; ses pages d'exemples passent
+  par `pagesDuTheme` dans `site.config.js`, et `app.js` appelle
+  `installeNavigation(parcours(config), 'exemple', id)`.
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
