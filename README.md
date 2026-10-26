@@ -91,4 +91,14 @@ Fichiers identiques dans les trois sites, repris tels quels (octet pour octet) :
   Dans un cours : `"serve": "node socle/serve.mjs"` (lancé depuis `site/`) ;
 - `tests/preferences.test.js`.
 
-Tests du socle seul : `npm test`.
+Tests ajoutés au socle (les cours n'en avaient pas) :
+
+- `tests/onglets.test.js`, `tests/infobulle.test.js` : onglet initial, clavier,
+  mot souligné, ouverture et fermeture de la bulle ;
+- `tests/theme.test.js` : contrat entre `theme.js` et `theme.css` (chaque
+  variable lue est définie en clair et en sombre) ;
+- `tests/aides/faux-dom.js` : faux DOM minimal, partagé par les tests, sans
+  dépendance npm (les tests tournent aussi dans le dépôt étudiant).
+
+Tests du socle seul : `npm test` (Node 22 ou plus). Serveur de développement :
+`npm run serve`.
