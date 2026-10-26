@@ -14,7 +14,7 @@ import re
 import sys
 from pathlib import Path
 
-from navigateur import SOCLE, lance_chrome, servi
+from navigateur import SOCLE, chrome, lance_chrome, servi
 
 PAGE_PAR_DEFAUT = "examples/minimal/index.html"
 ERREUR = re.compile(
@@ -24,7 +24,7 @@ ERREUR = re.compile(
 )
 EXIGE_CHROME = os.environ.get("EXIGE_CHROME") == "1"
 
-if EXIGE_CHROME and not Path(navigateur.chrome()).exists():
+if EXIGE_CHROME and not Path(chrome()).exists():
     raise RuntimeError("Chrome introuvable alors que EXIGE_CHROME=1")
 
 
