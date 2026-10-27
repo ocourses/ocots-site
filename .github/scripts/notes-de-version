@@ -4,7 +4,9 @@
     .github/scripts/notes-de-version v0.1.0 > notes.md
 
 Sortie 1 si la section `## vX.Y.Z` est absente : on ne publie pas une version
-que le CHANGELOG ne décrit pas.
+que le CHANGELOG ne décrit pas. Sortie 1 aussi si « ## Non publié » a encore des
+entrées : le tag porte alors des changements que les notes ne décrivent pas
+(tag posé après le commit de release).
 """
 
 import re
@@ -20,7 +22,12 @@ def section(changelog, version):
 def main(argv):
     version = argv[0]
     with open("CHANGELOG.md", encoding="utf-8") as fh:
-        notes = section(fh.read(), version)
+        changelog = fh.read()
+    if section(changelog, "Non publié"):
+        print("CHANGELOG.md : « ## Non publié » n'est pas vide, le tag doit porter"
+              " sur le commit de release", file=sys.stderr)
+        return 1
+    notes = section(changelog, version)
     if not notes:
         print(f"CHANGELOG.md : aucune section « ## {version} »", file=sys.stderr)
         return 1

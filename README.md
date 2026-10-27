@@ -246,9 +246,13 @@ Publier une version :
 
 1. PR `chore(release): vX.Y.Z` : la section « Non publié » du `CHANGELOG.md` devient
    `## vX.Y.Z — date`, et `package.json` porte `"version": "X.Y.Z"` ;
-2. une fois la PR fusionnée, tag annoté sur le commit de merge :
-   `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` ;
+2. une fois la PR fusionnée, tag annoté sur **son** commit de merge, pas sur un commit plus récent
+   de `main` : `git tag -a vX.Y.Z -m vX.Y.Z <merge> && git push origin vX.Y.Z` ;
 3. le workflow `release.yml` lance les tests, vérifie que `package.json` annonce bien le tag, et crée
-   la release GitHub avec la section du CHANGELOG pour notes (il échoue si elle manque) ;
+   la release GitHub avec la section du CHANGELOG pour notes ; il échoue si elle manque, ou si
+   « Non publié » a encore des entrées (tag posé trop tard) ;
+   si le workflow ne démarre pas (workflow invalide au commit du tag), la release se crée à la main
+   avec les mêmes notes : `.github/scripts/notes-de-version vX.Y.Z > notes.md && gh release create
+   vX.Y.Z --title vX.Y.Z --notes-file notes.md` ;
 4. chaque cours monte l'épingle de `site/socle/`, une PR par cours, avec les changements de
    comportement de la section.

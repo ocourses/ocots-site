@@ -8,12 +8,9 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
-- « Réinitialiser » n'affiche plus que « ↺ » (nom accessible « Réinitialiser », info-bulle
-  « Réinitialiser : … ») : avec le libellé, trois actions faisaient passer des titres sur deux
-  lignes (#26). **A, C, M** : changement visible. **Migration d'A et de C** : retirer de
-  `css/cours.css` les deux règles `.entete-actions` gardées à l'étape CSS (`flex-wrap: wrap`,
-  `flex: revert`) et adopter celle du socle (`flex: none; flex-wrap: nowrap`), qui garde les
-  actions sur une ligne ; sans cela, `jacobienne` (C) passe encore sur deux lignes en 1504 × 856.
+- Release (ocots-site#9) : `release.yml` refuse un tag dont le `CHANGELOG.md` a encore des entrées
+  « Non publié » (tag posé après le commit de release) ; plus de déclenchement manuel, qui ne
+  pouvait pas relancer une release. La CI vérifie les workflows (`actionlint`).
 
 ---
 
@@ -29,7 +26,7 @@ chaque migration est dans les sections ci-dessous (« Migration »).
 | | automatique (A) | calcul-differentiel-edo (C) | mesure-integration (M) |
 |---|---|---|---|
 | Ponctuation collée à une formule (`.insecable`) | nouveau | déjà | nouveau |
-| « ↺ Réinitialiser » sur les pages qui ont des réglages | nouveau | nouveau | déjà |
+| Bouton « ↺ » (« Réinitialiser ») sur les pages qui ont des réglages | nouveau | nouveau | libellé réduit à « ↺ » |
 | Règles CSS venues de M (titre masqué des onglets, formules du rappel resserrées, …) | nouveau | nouveau | déjà |
 | Préférences d'affichage remises aux défauts, une fois (clé `<id>.illustration.<page>`) | oui | non (même clé) | oui |
 | Nom accessible des étiquettes KaTeX sans la source LaTeX | nouveau | déjà | nouveau |
@@ -121,7 +118,10 @@ puis `css/cours.css`, `<noscript>`, sans balise KaTeX) ; `js/accueil.js` (`demar
 (`appliqueGlossaire(glossaire, racine, cles)`), `js/modeles.js` (`verifieModeles`).
 Changements de comportement :
 
-- **A, C** : « ↺ Réinitialiser » sur toute page qui a des réglages (décision 4, comme M) ;
+- **A, C** : bouton « ↺ » sur toute page qui a des réglages (décision 4, comme M) ;
+- **A, C, M** : ce bouton n'affiche que « ↺ » (nom accessible « Réinitialiser », info-bulle
+  « Réinitialiser : … ») : avec le libellé, trois actions faisaient passer des titres sur deux
+  lignes (ocots-site#26) ;
 - **A, C, M** : préférences sous `<id>.illustration.<page>` (`automatique.`, `calcul-differentiel-edo.`,
   `mesure-integration.`) : les préférences d'affichage d'A et M repartent des défauts, une fois
   (décision 5) ;
@@ -139,7 +139,11 @@ Changements de comportement :
   passent dans le socle ;
 - **A** : garde son `index.html` (le modèle, plus le `<template>` du schéma et un module qui greffe le
   schéma et la galerie sur `#theme-commande` après `await demarreAccueil(config)`) et vérifie
-  seulement `['illustration.html']`.
+  seulement `['illustration.html']` ;
+- **A, C** : retirer de `css/cours.css` les deux règles `.entete-actions` gardées à l'étape CSS
+  (`flex-wrap: wrap`, `flex: revert`) et adopter celle du socle (`flex: none; flex-wrap: nowrap`),
+  qui garde les actions sur une ligne ; sans cela, `jacobienne` (C) passe encore sur deux lignes en
+  1504 × 856.
 
 ### Cours minimal et outils de non-régression (ocots-site#7)
 
