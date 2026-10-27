@@ -11,6 +11,9 @@ précède toute extraction de code. Les décisions prises sont à la fin
 
 ## Principes
 
+Le catalogue complet, avec la règle et la vérification de chaque principe, est
+dans [principes.md](principes.md).
+
 | Principe | Application |
 |----------|-------------|
 | DRY | Tout ce qui est identique dans les trois sites va dans le socle : le balisage d'`illustration.html`, `trouve`, le moteur du glossaire, la version de KaTeX, le test du catalogue. |
