@@ -8,6 +8,13 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- « Réinitialiser » n'affiche plus que « ↺ » (nom accessible « Réinitialiser », info-bulle
+  « Réinitialiser : … ») : avec le libellé, trois actions faisaient passer des titres sur deux
+  lignes (#26). **A, C, M** : changement visible. **Migration d'A et de C** : retirer de
+  `css/cours.css` les deux règles `.entete-actions` gardées à l'étape CSS (`flex-wrap: wrap`,
+  `flex: revert`) et adopter celle du socle (`flex: none; flex-wrap: nowrap`), qui garde les
+  actions sur une ligne ; sans cela, `jacobienne` (C) passe encore sur deux lignes en 1504 × 856.
+
 ---
 
 ## v0.1.0 — 2026-10-27

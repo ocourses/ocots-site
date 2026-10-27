@@ -29,6 +29,7 @@ async function page(adresse = '?id=a', modifie = () => {}) {
 
 const clic = (element) => element.dispatchEvent(evenement('click'));
 const boutons = (racine, texte) => racine.querySelectorAll('button').filter((b) => b.textContent === texte);
+const reinitialiser = (document) => document.querySelector('.entete-actions').querySelectorAll('button').filter((b) => b.getAttribute('aria-label') === 'Réinitialiser');
 
 test('lisEtat et versRecherche : aller-retour par l’URL, valeurs illisibles ou hors choix ignorées', () => {
   const defaut = { n: 3, fonction: 'dirichlet', anime: true };
@@ -126,8 +127,10 @@ test('illustration : sans essai, l’onglet « À essayer » est caché', async 
 
 test('illustration : « Réinitialiser » remet les réglages par défaut, et n’existe pas sans réglage', async () => {
   const { document, releve } = await page('?id=a&n=9');
-  const [reinit] = boutons(document.querySelector('.entete-actions'), '↺ Réinitialiser');
+  const [reinit] = reinitialiser(document);
   assert.ok(reinit === document.querySelector('.entete-actions').children[0], 'en tête des actions');
+  assert.equal(reinit.textContent, '↺', 'le symbole seul, pour que les titres longs tiennent sur une ligne (#26)');
+  assert.match(reinit.title, /^Réinitialiser : /);
   clic(reinit);
   assert.deepEqual(releve.appliques, [{ n: 3, forme: 'carre', anime: true }]);
   assert.equal(releve.outils.etat.n, 3);
@@ -136,7 +139,7 @@ test('illustration : « Réinitialiser » remet les réglages par défaut, et n�
     delete modules.a.etat;
     modules.a.essais = [];
   });
-  assert.equal(boutons(sans.document.querySelector('.entete-actions'), '↺ Réinitialiser').length, 0);
+  assert.equal(reinitialiser(sans.document).length, 0);
 });
 
 test('illustration : les termes du module sont soulignés dans le rappel et les essais, et par outils.glossaire', async () => {
