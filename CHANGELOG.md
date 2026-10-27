@@ -11,6 +11,13 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 - Release (ocots-site#9) : `release.yml` refuse un tag dont le `CHANGELOG.md` a encore des entrées
   « Non publié » (tag posé après le commit de release) ; plus de déclenchement manuel, qui ne
   pouvait pas relancer une release. La CI vérifie les workflows (`actionlint`).
+- `.grille-3` (trois colonnes, deux puis une sur petit écran ; en pleine page, colonnes au moins
+  240 px et cartes en colonne) et les rangées `plus-haut` / `rangee-basse` (60 % et 40 % de la
+  hauteur) passent dans le socle : A et C les avaient chacun dans leur feuille (#28). **A, C** :
+  aucun changement visible (styles calculés identiques) ; à la migration, `residu-css.py` ne les met
+  plus dans `css/cours.css`. **M** : rien ne change, il ne les emploie pas.
+- `residu-css.py` : d'un bloc gardé, les sélecteurs que le socle a à l'identique sont retirés
+  (C : `.grille-large, .grille-2, .grille-3 { … }` devient `.grille-large { … }`).
 
 ---
 

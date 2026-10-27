@@ -150,9 +150,23 @@ body.page-illustration .entete-barre h1 {
     flex-direction: column;
   }
 
+  body.page-illustration .illustration-zone .contenu-repliable > .grille-3 {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
   /* La rangée principale (figures) prend deux fois plus de hauteur que les autres. */
   body.page-illustration .illustration-zone > .principale {
     flex-grow: 2;
+  }
+
+  /* Rangée du haut un peu plus haute que celle du bas : 60 % contre 40 %. */
+  body.page-illustration .illustration-zone > .plus-haut {
+    flex: 3 1 0;
+  }
+
+  body.page-illustration .illustration-zone > .rangee-basse {
+    flex: 2 1 0;
   }
 
   /* Une ligne d'outils garde sa hauteur naturelle. */
@@ -203,11 +217,18 @@ body.page-illustration .entete-barre h1 {
   /* Les grilles se partagent leur hauteur en lignes égales ; les cartes, et les
      blocs qui portent un canevas, deviennent des colonnes dont le canevas
      occupe la place restante, quelles que soient ses proportions d'origine. */
-  body.page-illustration .illustration-zone .grille-2 {
+  body.page-illustration .illustration-zone .grille-2,
+  body.page-illustration .illustration-zone .grille-3 {
     grid-auto-rows: minmax(0, 1fr);
   }
 
-  body.page-illustration .illustration-zone .carte {
+  body.page-illustration .illustration-zone .grille-3 {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    align-items: stretch;
+  }
+
+  body.page-illustration .illustration-zone .carte,
+  body.page-illustration .illustration-zone .grille-3 > div {
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -219,7 +240,8 @@ body.page-illustration .entete-barre h1 {
 
   /* Dans une carte, seuls les canevas rétrécissent ; un bloc de formules ou de
      texte garde sa hauteur (sinon, coupé, il pourrait disparaître). */
-  body.page-illustration .illustration-zone .carte > :not(canvas) {
+  body.page-illustration .illustration-zone .carte > :not(canvas),
+  body.page-illustration .illustration-zone .grille-3 > div > :not(canvas) {
     flex-shrink: 0;
   }
 
@@ -321,6 +343,19 @@ button.essayer {
   align-items: stretch;
 }
 
+.grille-3 {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .grille-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Deux colonnes : deux cartes empilées à gauche, une carte sur toute la hauteur
    à droite. En colonne unique, l'ordre est celui de la lecture : première carte
    de gauche, carte de droite, seconde carte de gauche. */
@@ -365,7 +400,8 @@ button.essayer {
 }
 
 @media (max-width: 700px) {
-  .grille-2 {
+  .grille-2,
+  .grille-3 {
     grid-template-columns: minmax(0, 1fr);
   }
 }
