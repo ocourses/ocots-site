@@ -26,6 +26,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from sites import copie_site
+
 SOCLE = Path(__file__).resolve().parent.parent
 LIENS = {
     "css/theme.css": ["socle/css/theme.css"],
@@ -66,7 +68,7 @@ def pose_pages(sortie, config, modeles=MODELES):
 
 def construit(site, sortie, config=None, modeles=MODELES):
     site, sortie = Path(site).resolve(), Path(sortie)
-    shutil.copytree(site, sortie, ignore=shutil.ignore_patterns("node_modules", ".git"))
+    copie_site(site, sortie)
     shutil.copytree(SOCLE / "css", sortie / "socle/css")
     reste = subprocess.run([sys.executable, str(SOCLE / "scripts/residu-css.py"), str(site / "css/style.css"), "--site", str(site)],
                            capture_output=True, text=True, check=True)

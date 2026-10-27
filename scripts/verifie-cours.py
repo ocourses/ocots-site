@@ -27,6 +27,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from sites import copie_site
+
 SOCLE = Path(__file__).resolve().parent.parent
 RACINE = Path(os.environ.get("COURS", Path.home() / "Courses"))
 SITES = {
@@ -89,7 +91,7 @@ def verifie(cours, site):
     avant, echecs_avant = tests_reussis(site)
     with tempfile.TemporaryDirectory(prefix=f"verifie-{cours}-") as dossier:
         copie = Path(dossier) / "site"
-        shutil.copytree(site, copie, ignore=shutil.ignore_patterns("node_modules", ".git"))
+        copie_site(site, copie)
         original = (site / "js/illustrations/commun.js").read_text()
         for fichier in fichiers_du_socle():
             cible = copie / fichier
