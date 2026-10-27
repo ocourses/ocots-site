@@ -8,6 +8,17 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+
+---
+
+## v0.2.0 — 2026-10-27
+
+Aucun changement visible pour un lecteur. Une règle CSS ajoutée au socle
+(`.grille-3`, `plus-haut`, `rangee-basse`), un outil corrigé, une garde de plus
+pour un clone sans sous-module. Un cours qui monte de v0.1.0 à v0.2.0 ne change
+que le gitlink de `site/socle/` ; à sa migration, `automatique` et
+`calcul-differentiel-edo` n'ont plus ces règles dans leur `css/cours.css`.
+
 - Garde du sous-module : `npm run serve` dit « Socle absent » comme `npm test`, par un script `socle`
   que `pretest` et `preserve` appellent (README, « Intégrer le socle dans un cours » ; l'essai
   d'intégration vérifie les deux). **Migration** : à ajouter au `package.json` du cours.
