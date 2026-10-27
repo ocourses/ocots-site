@@ -139,7 +139,7 @@ source = "site"
 cible = "site"
 miroir = true
 exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
-  "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
+  "socle/examples/*", "socle/.github/*"]
 EOF
 g "$ens" add -A && g "$ens" commit -q -m "cours"
 echo "gitlink : $(g "$ens" ls-files --stage site/socle)"
@@ -169,12 +169,13 @@ etape "6. publier-etudiant simuler puis preparer"
 python3 "$PE" --config "$ens/publication.toml" simuler | sed -n 1,12p
 python3 "$PE" --config "$ens/publication.toml" preparer >/dev/null
 etu=$tmp/etu-publication
-for f in site/socle/package.json site/socle/js/accueil.js site/socle/css/theme.css site/socle/tests/socle.test.js site/index.html site/scripts/outil.sh; do
+for f in site/socle/package.json site/socle/js/accueil.js site/socle/css/theme.css site/socle/tests/socle.test.js \
+  site/socle/modeles/site.yml site/index.html site/scripts/outil.sh; do
   test -f "$etu/$f" || echoue "manque côté étudiant : $f"
   echo "présent côté étudiant : $f"
 done
 for f in site/socle/.git .gitmodules site/socle/scripts site/socle/docs \
-  site/socle/examples site/socle/modeles site/socle/.github; do
+  site/socle/examples site/socle/.github; do
   test ! -e "$etu/$f" || echoue "publié à tort côté étudiant : $f"
   echo "absent côté étudiant : $f"
 done

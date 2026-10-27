@@ -84,7 +84,8 @@ Changements de comportement :
 **Migration de chaque cours** :
 
 - copier les deux modèles à la racine de `site/` ; ajouter le test
-  `verifieModeles(new URL('../', import.meta.url))` ;
+  `verifieModeles(new URL('../', import.meta.url))` ; **ne plus exclure `socle/modeles/*`** de la
+  publication (`publication.toml`) : ce test le lit, côté étudiant aussi ;
 - supprimer `js/accueil.js`, `js/illustration.js`, `js/parcours.js`, `trouve` et `appliqueGlossaire`
   (le glossaire du cours ne garde que ses données) ; les tests de `lisEtat` et `versRecherche` (M)
   passent dans le socle ;
