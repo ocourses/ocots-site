@@ -19,7 +19,6 @@ import concurrent.futures
 import html
 import json
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -27,6 +26,7 @@ from pathlib import Path
 
 from captures import pages
 from navigateur import lance_chrome, servi, taille
+from sites import copie_site
 
 RELEVE = """<script>
 window.addEventListener('load', () => setTimeout(() => {
@@ -56,7 +56,7 @@ def releves(site, liste, tailles):
     """{(page, taille) : {chemin d'élément : {propriété : valeur}}} ; {} si la page n'a rien rendu."""
     with tempfile.TemporaryDirectory(prefix="styles-") as dossier:
         copie = Path(dossier) / "site"
-        shutil.copytree(site, copie, ignore=shutil.ignore_patterns("node_modules", ".git"))
+        copie_site(site, copie)
         for page in copie.glob("*.html"):
             page.write_text(page.read_text().replace("</body>", RELEVE + "</body>"))
 

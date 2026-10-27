@@ -8,6 +8,9 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- Outils : `styles-calcules.py`, `site-apres.py` et `verifie-cours.py` copient un site sans
+  suivre les liens symboliques (`scripts/sites.py`). Sur un cours migré, le lien du cours minimal
+  (`socle/examples/minimal/socle`) bouclait et la copie échouait.
 - Release (ocots-site#9) : `release.yml` refuse un tag dont le `CHANGELOG.md` a encore des entrées
   « Non publié » (tag posé après le commit de release) ; plus de déclenchement manuel, qui ne
   pouvait pas relancer une release. La CI vérifie les workflows (`actionlint`).
