@@ -123,9 +123,10 @@ echo "export default { texte: 'module du cours charge' };" > "$ens/site/js/demo.
 # Un dossier scripts/ du cours lui-même : il doit, lui, être publié.
 echo "outil du cours" > "$ens/site/scripts/outil.sh"
 # Garde recommandée dans le package.json d'un cours (README) : sans sous-module
-# initialisé, npm test le dit au lieu d'échouer sur un module introuvable.
+# initialisé, npm test et npm run serve le disent au lieu d'échouer sur un module
+# introuvable.
 cat > "$ens/site/package.json" <<'EOF'
-{"private":true,"type":"module","scripts":{"pretest":"test -f socle/package.json || { echo 'Socle absent : git submodule update --init' >&2; exit 1; }","test":"node --test"}}
+{"private":true,"type":"module","scripts":{"socle":"test -f socle/package.json || { echo 'Socle absent : git submodule update --init' >&2; exit 1; }","pretest":"npm run -s socle","preserve":"npm run -s socle","test":"node --test","serve":"node socle/serve.mjs"}}
 EOF
 g "$ens" submodule add -q "$socle" site/socle
 g "$ens/site/socle" checkout -q v0.1.0
@@ -144,13 +145,15 @@ EOF
 g "$ens" add -A && g "$ens" commit -q -m "cours"
 echo "gitlink : $(g "$ens" ls-files --stage site/socle)"
 
-etape "3. Clone enseignant sans sous-module : npm test le dit"
+etape "3. Clone enseignant sans sous-module : npm test et npm run serve le disent"
 git clone -q "$ens" "$tmp/ens-clone"
-if (cd "$tmp/ens-clone/site" && npm test >"$tmp/garde.log" 2>&1); then
-  echoue "npm test passe alors que le socle n'est pas initialisé"
-fi
-grep -q "Socle absent : git submodule update --init" "$tmp/garde.log" || { cat "$tmp/garde.log"; echoue "message de la garde absent"; }
-echo "ok : « Socle absent : git submodule update --init »"
+for commande in "npm test" "npm run serve"; do
+  if (cd "$tmp/ens-clone/site" && $commande >"$tmp/garde.log" 2>&1); then
+    echoue "$commande passe alors que le socle n'est pas initialisé"
+  fi
+  grep -q "Socle absent : git submodule update --init" "$tmp/garde.log" || { cat "$tmp/garde.log"; echoue "$commande : message de la garde absent"; }
+  echo "ok ($commande) : « Socle absent : git submodule update --init »"
+done
 
 etape "4. Dépôt étudiant (vide, avec origine)"
 git init -q --bare -b main "$tmp/origin.git"
