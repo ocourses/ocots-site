@@ -38,9 +38,10 @@ PROPRE = json.loads((SOCLE / "scripts/propre-aux-cours.json").read_text())
 
 
 # Fichiers du socle qui ne remplacent pas encore ceux des cours : la couche de
-# configuration (ocots-site#7) prend ses données en argument, et chaque cours
-# l'adopte à sa migration. Les poser ici mesurerait la migration, pas la fusion.
-A_LA_MIGRATION = {"js/config.js", "js/catalogue.js", "js/parcours.js"}
+# configuration et les pages (ocots-site#7) prennent leurs données en argument, et
+# chaque cours les adopte à sa migration. Les poser ici mesurerait la migration,
+# pas la fusion (et écraserait js/accueil.js et js/illustration.js du cours).
+A_LA_MIGRATION = {"js/config.js", "js/catalogue.js", "js/parcours.js", "js/accueil.js", "js/illustration.js", "js/glossaire.js", "js/modeles.js"}
 
 
 def fichiers_du_socle():

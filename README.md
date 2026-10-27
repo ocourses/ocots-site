@@ -42,11 +42,12 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   épingle son sous-module `publication/` à v1.2.0 ou plus. Les outils et la
   documentation du socle ne servent pas à l'étudiant : les exclure dans
   `publication.toml`, par leur chemin (un motif nu comme `scripts` exclurait
-  aussi les dossiers du cours qui portent ce nom) :
+  aussi les dossiers du cours qui portent ce nom). `socle/modeles/` reste publié :
+  le test des gabarits (`verifieModeles`) le lit, et il tourne aussi côté étudiant.
 
   ```toml
   exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
-    "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
+    "socle/examples/*", "socle/.github/*"]
   ```
 
 - **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
@@ -141,6 +142,20 @@ Un cours décrit ce qui le distingue dans `site.config.js` (clés et contrat : `
 - `js/catalogue.js` : `trouve(themes, id)`, `disponibles(theme)` ;
 - `js/parcours.js` : `parcours(config)` (l'ordre de lecture, avec les pages de `pagesDuTheme`),
   `precedente`, `suivante`, `ancre`, `installeNavigation(pages, genre, id)`.
+
+### Pages
+
+Les deux pages d'un cours sont des copies des modèles du socle, sans changement :
+`modeles/index.html` et `modeles/illustration.html`. Leur module importe `site.config.js` et appelle
+`demarreAccueil(config)` ou `demarreIllustration(config)`, qui chargent KaTeX et remplissent la page.
+Un test du cours vérifie les copies :
+
+```js
+import { verifieModeles } from '../socle/js/modeles.js';
+test('les gabarits sont ceux du socle', () => verifieModeles(new URL('../', import.meta.url)));
+```
+
+Le moteur du glossaire est `appliqueGlossaire(glossaire, racine, cles)` (`js/glossaire.js`).
 
 ## CSS
 

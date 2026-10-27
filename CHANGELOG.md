@@ -65,6 +65,34 @@ Ajouts : `js/config.js` (`valideConfig`, `verifieCours`), `js/catalogue.js` (`tr
   par `pagesDuTheme` dans `site.config.js`, et `app.js` appelle
   `installeNavigation(parcours(config), 'exemple', id)`.
 
+### Pages (ocots-site#7)
+
+Ajouts : `modeles/index.html`, `modeles/illustration.html` (gabarits complets, liens `socle/css/…`
+puis `css/cours.css`, `<noscript>`, sans balise KaTeX) ; `js/accueil.js` (`demarreAccueil`),
+`js/illustration.js` (`demarreIllustration`, `lisEtat`, `versRecherche`), `js/glossaire.js`
+(`appliqueGlossaire(glossaire, racine, cles)`), `js/modeles.js` (`verifieModeles`).
+Changements de comportement :
+
+- **A, C** : « ↺ Réinitialiser » sur toute page qui a des réglages (décision 4, comme M) ;
+- **A, C, M** : préférences sous `<id>.illustration.<page>` (`automatique.`, `calcul-differentiel-edo.`,
+  `mesure-integration.`) : les préférences d'affichage d'A et M repartent des défauts, une fois
+  (décision 5) ;
+- **A, C, M** : le titre de l'accueil suit la typographie française (espace insécable avant « : ») ;
+  le premier changement de réglage est écrit dans l'URL tout de suite, même dans les 200 premières
+  millisecondes de la page.
+
+**Migration de chaque cours** :
+
+- copier les deux modèles à la racine de `site/` ; ajouter le test
+  `verifieModeles(new URL('../', import.meta.url))` ; **ne plus exclure `socle/modeles/*`** de la
+  publication (`publication.toml`) : ce test le lit, côté étudiant aussi ;
+- supprimer `js/accueil.js`, `js/illustration.js`, `js/parcours.js`, `trouve` et `appliqueGlossaire`
+  (le glossaire du cours ne garde que ses données) ; les tests de `lisEtat` et `versRecherche` (M)
+  passent dans le socle ;
+- **A** : garde son `index.html` (le modèle, plus le `<template>` du schéma et un module qui greffe le
+  schéma et la galerie sur `#theme-commande` après `await demarreAccueil(config)`) et vérifie
+  seulement `['illustration.html']`.
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
@@ -75,6 +103,4 @@ Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade
 
 ### Reporté
 
-- `js/illustration.js` : relève de la configuration (#7).
 - `js/core/dim2.js`, `js/illustrations/{plan-trace-det,portraits}.js` : sans test autonome (`dim2`), ou dépendants de la décision sur les briques d'illustration.
-- `illustration.html` : voir la conception.
