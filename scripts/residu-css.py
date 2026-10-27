@@ -7,7 +7,8 @@ Lit `css/style.css` du socle (ses @import) et celui du cours, puis écrit, dans
 l'ordre d'origine, les blocs du cours que le socle ne contient pas à
 l'identique : règles propres au cours, et règles dont les déclarations diffèrent
 (elles passent après le socle et gardent donc leur effet). Un bloc dont
-toutes les règles sont dans le socle est omis.
+toutes les règles sont dans le socle est omis ; d'un bloc gardé, seuls les
+sélecteurs que le socle n'a pas à l'identique restent.
 
 Les propriétés que le socle règle pour un sélecteur que le cours possède aussi, sans
 que le cours les règle, sont remises à `revert` en fin de feuille : le cours garde son
@@ -87,6 +88,14 @@ def blocs(txt):
         sortie.append((txt[debut:k], tete, regles, sous_blocs))
         i = k
     return sortie
+
+
+def garde_selecteurs(brut, selecteurs):
+    """Le bloc `brut` réduit à ces sélecteurs ; ses commentaires de tête et son corps restent."""
+    tete, corps = brut.split("{", 1)
+    debut = re.match(r"\s*(?:/\*.*?\*/\s*)*", tete, re.S).group(0)
+    retrait = re.search(r"[ \t]*$", debut).group(0)
+    return debut + (",\n" + retrait).join(selecteurs) + " {" + corps
 
 
 def texte_socle():
@@ -193,13 +202,17 @@ def main():
                 interieur = filtre(sous_blocs, tete)
                 if interieur:
                     sortie += f"{tete} {{\n{interieur.rstrip()}\n}}\n\n"
-            elif all(((f"{enveloppe} {{ {s} }}" if enveloppe else s), d) in socle for s, d in regles):
+                continue
+            au_socle = [((f"{enveloppe} {{ {s} }}" if enveloppe else s), d) in socle for s, d in regles]
+            if all(au_socle):
                 stats["socle"] += 1
             elif src is not None and mort(regles, src):
                 stats["écartés"] += 1
                 print(f"écarté (mort) : {(enveloppe + ' > ' if enveloppe else '') + tete[:90]}", file=sys.stderr)
             else:
                 stats["gardés"] += 1
+                if any(au_socle) and not tete.startswith("@"):
+                    brut = garde_selecteurs(brut, [s for (s, _), ok in zip(regles, au_socle) if not ok])
                 sortie += brut.strip("\n") + "\n\n"
         return sortie
 

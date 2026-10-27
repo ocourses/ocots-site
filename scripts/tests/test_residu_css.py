@@ -55,6 +55,12 @@ class Reste(unittest.TestCase):
         sortie = lance("/* Propre au cours ; suite. */\n\n.propre-au-cours-xyz {\n  color: var(--texte);\n}\n")
         self.assertRegex(sortie, r"^/\* Propre au cours ; suite\. \*/\s*\.propre-au-cours-xyz \{")
 
+    def test_d_un_bloc_garde_les_selecteurs_du_socle_sont_retires(self):
+        sortie = lance("@media (max-width: 700px) {\n  /* Une colonne. */\n  .propre-au-cours-xyz,\n  .grille-2 {\n"
+                       "    grid-template-columns: minmax(0, 1fr);\n  }\n}\n")
+        self.assertIn("  /* Une colonne. */\n  .propre-au-cours-xyz {\n    grid-template-columns", sortie)
+        self.assertNotIn(".grille-2", sortie)
+
     def test_une_regle_aux_declarations_differentes_est_gardee(self):
         sortie = lance("body {\n  margin: 5px;\n}\n")
         self.assertIn("margin: 5px", sortie)

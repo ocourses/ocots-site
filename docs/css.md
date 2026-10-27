@@ -73,6 +73,20 @@ de chaque cours, avec les captures avant/après, pour que l'enseignant voie ce q
 `canvas.toile + :is(.bloc-maths, .texte-fixe, .barre-legende, .note)`. Elles viennent de M. Pour A s'ajoute
 `.insecable` (`white-space: nowrap`, de C), que le `katex.js` du socle a besoin de voir défini.
 
+### Dispositions communes à A et C (ocots-site#28)
+
+`.grille-3` (trois colonnes, deux sous 1100 px, une sous 700 px ; en pleine page, colonnes d'au moins
+240 px dont chaque bloc est une colonne où seul le canevas rétrécit) et les rangées `plus-haut` /
+`rangee-basse` (60 % et 40 % de la hauteur) étaient dans les deux `cours.css`, à l'identique : M ne
+les emploie pas, elles n'étaient donc pas venues avec sa feuille. Elles sont remontées telles quelles
+dans `illustration.css`. `residu-css.py` retire en outre d'un bloc gardé les sélecteurs que le socle
+a à l'identique : C garde `.grille-large { grid-auto-rows: … }` seul.
+
+Vérification : les `cours.css` calculés d'A et C ne les contiennent plus, sans règle ajoutée ; celui
+de M est inchangé. Styles calculés (1504 × 856, 1504 × 600, 390 × 844) : M 66 / 66 ; C 55 / 57 et
+A 47 / 57, les écarts restants étant tous sur des pages animées (`pendule` de C, exemples du
+simulateur d'A), où la feuille « avant » comparée à elle-même donne les mêmes écarts.
+
 ## Vérification visuelle
 
 `scripts/captures.py` prend une capture de chaque page (accueil, illustrations et exemples
