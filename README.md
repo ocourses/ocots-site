@@ -42,11 +42,12 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   épingle son sous-module `publication/` à v1.2.0 ou plus. Les outils et la
   documentation du socle ne servent pas à l'étudiant : les exclure dans
   `publication.toml`, par leur chemin (un motif nu comme `scripts` exclurait
-  aussi les dossiers du cours qui portent ce nom) :
+  aussi les dossiers du cours qui portent ce nom). `socle/modeles/` reste publié :
+  le test des gabarits (`verifieModeles`) le lit, et il tourne aussi côté étudiant.
 
   ```toml
   exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
-    "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
+    "socle/examples/*", "socle/.github/*"]
   ```
 
 - **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
@@ -123,6 +124,39 @@ Le script pose les fichiers du socle sur une copie de chaque `site/`, remplace s
 `scripts/propre-aux-cours.json`), et rejoue les tests du cours. Il compare les **noms**
 des tests réussis avant et après : un test manquant ou en échec fait échouer le script.
 
+## Configuration d'un cours
+
+Un cours décrit ce qui le distingue dans `site.config.js` (clés et contrat : `docs/conception.md`) :
+
+- `js/config.js` : `valideConfig(config)` vérifie la forme de la configuration, sans rien charger ;
+  `verifieCours(config)` charge en plus chaque illustration disponible et vérifie son module (essais,
+  préférences, termes du glossaire) et le parcours. Toutes les fautes sont listées dans une seule
+  erreur. Dans un cours, un test d'une ligne :
+
+  ```js
+  import { verifieCours } from '../socle/js/config.js';
+  import config from '../site.config.js';
+  test('le cours respecte le contrat du socle', () => verifieCours(config));
+  ```
+
+- `js/catalogue.js` : `trouve(themes, id)`, `disponibles(theme)` ;
+- `js/parcours.js` : `parcours(config)` (l'ordre de lecture, avec les pages de `pagesDuTheme`),
+  `precedente`, `suivante`, `ancre`, `installeNavigation(pages, genre, id)`.
+
+### Pages
+
+Les deux pages d'un cours sont des copies des modèles du socle, sans changement :
+`modeles/index.html` et `modeles/illustration.html`. Leur module importe `site.config.js` et appelle
+`demarreAccueil(config)` ou `demarreIllustration(config)`, qui chargent KaTeX et remplissent la page.
+Un test du cours vérifie les copies :
+
+```js
+import { verifieModeles } from '../socle/js/modeles.js';
+test('les gabarits sont ceux du socle', () => verifieModeles(new URL('../', import.meta.url)));
+```
+
+Le moteur du glossaire est `appliqueGlossaire(glossaire, racine, cles)` (`js/glossaire.js`).
+
 ## CSS
 
 Le socle fournit `css/theme.css` (la charte, en variables) et `css/style.css` (les composants).
@@ -133,6 +167,7 @@ propre. Voir `docs/css.md`.
 scripts/residu-css.py STYLE_DU_COURS.css --site DOSSIER_SITE > cours.css   # le reste d'un cours
 scripts/residu-css.py STYLE_DU_COURS.css --nouveautes                       # ce que le socle lui apporte
 scripts/site-apres.py DOSSIER_SITE SORTIE                                    # le cours avec le CSS du socle
+scripts/site-apres.py DOSSIER_SITE SORTIE --pages scripts/configs/COURS.config.js [--modeles illustration.html]   # et ses pages
 scripts/captures.py prendre DOSSIER_SITE SORTIE [--tailles 1504x856 390x844]   # captures avant/après
 scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
 scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 390x844 1504x600]   # le critère fiable
@@ -167,8 +202,8 @@ déjà le code du socle.
 ## CI et déploiement
 
 - **CI du socle** (`.github/workflows/tests.yml`) : `npm test` (Node 22 et 24), `npm run test:outils`,
-  un cours minimal qui consomme le socle (`examples/minimal/` : ses tests, puis `scripts/fumee.py`, la page
-  ouverte dans Chrome sans interface, sans erreur de console), l'essai d'intégration
+  le cours minimal (`examples/minimal/`, ci-dessous : ses tests, puis `scripts/fumee.py`, ses pages
+  ouvertes dans Chrome sans interface, démarrées et sans erreur de console), l'essai d'intégration
   (`scripts/essai-integration.sh`, avec `ocots-publication` v1.2.0) et le workflow Pages ci-dessous, appelé sur
   l'exemple sans publier.
 - **Workflow Pages réutilisable** (`.github/workflows/site.yml`) : les tests du site (`npm test` dans son
@@ -177,7 +212,20 @@ déjà le code du socle.
   l'appelle avec `modeles/site.yml`, **épinglé par tag** (`@vX.Y.Z`), en accordant `pages: write` et
   `id-token: write`. Le fichier du dépôt étudiant est publié depuis le dépôt enseignant
   (`etudiant/.github/workflows/site.yml`) : le remplacer par ce modèle fait partie de la migration d'un cours.
-- Pas encore vérifié ici : le schéma de `site.config.js` (il arrive avec ocots-site#7).
+
+### Cours minimal
+
+`examples/minimal/` est un vrai petit cours, disposé comme un cours (`docs/conception.md`, « Disposition
+d'un cours ») : `site.config.js`, les deux gabarits copiés des modèles, `css/cours.css`, deux illustrations
+et une annoncée, un glossaire, et ses tests (`verifieCours`, `verifieModeles`). `socle/` y est un lien vers
+la racine du dépôt, à la place du sous-module. C'est l'exemple à suivre pour un nouveau cours, et la
+non-régression du socle en CI.
+
+```bash
+cd examples/minimal && npm test         # le contrat du socle et les gabarits
+scripts/fumee.py                        # ses pages dans Chrome sans interface
+npm run serve                           # puis http://localhost:8000/examples/minimal/
+```
 
 ## Versions et publication
 

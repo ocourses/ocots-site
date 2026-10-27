@@ -31,12 +31,15 @@ from navigateur import lance_chrome, servi, taille
 RELEVE = """<script>
 window.addEventListener('load', () => setTimeout(() => {
   const sortie = {};
+  // <noscript> n'est pas rendu quand JavaScript tourne : ni relevé, ni compté
+  // dans le rang de ses voisins (un modèle en ajoute un sans rien déplacer).
+  const rendus = (parent) => [...parent.children].filter((x) => !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(x.tagName));
   document.querySelectorAll('body *').forEach((e) => {
-    if (['SCRIPT', 'STYLE'].includes(e.tagName)) return;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(e.tagName) || e.closest('noscript')) return;
     const chemin = [];
     for (let n = e; n && n !== document.body; n = n.parentNode) {
       const c = typeof n.className === 'string' && n.className.trim() ? '.' + n.className.trim().split(/\\s+/).join('.') : '';
-      chemin.unshift(n.tagName.toLowerCase() + c + ':' + [...n.parentNode.children].indexOf(n));
+      chemin.unshift(n.tagName.toLowerCase() + c + ':' + rendus(n.parentNode).indexOf(n));
     }
     const cs = getComputedStyle(e);
     sortie[chemin.join('>')] = Object.fromEntries([...cs].map((k) => [k, cs.getPropertyValue(k)]));

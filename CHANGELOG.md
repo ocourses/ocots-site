@@ -8,6 +8,15 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+### Chargement de KaTeX (ocots-site#7)
+
+`chargeKatex()` dans `js/ui/katex.js` : KaTeX 0.16.11 (version inchangée)
+depuis jsDelivr, avec empreintes SRI. **Migration** : les pages du cours
+retirent leurs deux balises KaTeX (`<link>` et `<script>`) ; le démarrage des
+pages du socle (étape suivante de ocots-site#7) attend `chargeKatex()` avant
+tout rendu. Une page à soi (exemple.html d'A) l'appelle elle-même :
+`await chargeKatex()`.
+
 ### Fichiers repris (étape 1)
 
 `css/theme.css`, `js/ui/{onglets,preferences,infobulle,theme}.js`, `serve.mjs` :
@@ -42,6 +51,58 @@ espacement sous un canevas, `.entete-barre > div:first-child`. Les six règles q
 (`.entete-actions`, `a.bouton-lien`, `.verdict`, `.legende-courbes`, `.barre-legende`,
 `.texte-fixe`) gardent leur forme actuelle dans le `cours.css` d'A et C.
 
+### Configuration et parcours (ocots-site#7)
+
+Ajouts : `js/config.js` (`valideConfig`, `verifieCours`), `js/catalogue.js` (`trouve`, `disponibles`),
+`js/parcours.js`. **Migration de chaque cours** :
+
+- `trouve` et le parcours prennent leurs données en argument : `trouve(config.themes, id)`,
+  `installeNavigation(parcours(config), genre, id)` (le `parcours.js` du cours disparaît) ;
+- le test « catalogue : identifiants uniques, modules présents… » du cours est remplacé par
+  `verifieCours(config)`, plus strict : une clé inconnue, ou un essai dont un réglage ou une préférence
+  n'a pas le type de sa valeur par défaut, est une faute. Les trois cours passent tels quels ;
+- **A** : le drapeau `simulateur: true` sort du catalogue (clé inconnue) ; ses pages d'exemples passent
+  par `pagesDuTheme` dans `site.config.js`, et `app.js` appelle
+  `installeNavigation(parcours(config), 'exemple', id)`.
+
+### Pages (ocots-site#7)
+
+Ajouts : `modeles/index.html`, `modeles/illustration.html` (gabarits complets, liens `socle/css/…`
+puis `css/cours.css`, `<noscript>`, sans balise KaTeX) ; `js/accueil.js` (`demarreAccueil`),
+`js/illustration.js` (`demarreIllustration`, `lisEtat`, `versRecherche`), `js/glossaire.js`
+(`appliqueGlossaire(glossaire, racine, cles)`), `js/modeles.js` (`verifieModeles`).
+Changements de comportement :
+
+- **A, C** : « ↺ Réinitialiser » sur toute page qui a des réglages (décision 4, comme M) ;
+- **A, C, M** : préférences sous `<id>.illustration.<page>` (`automatique.`, `calcul-differentiel-edo.`,
+  `mesure-integration.`) : les préférences d'affichage d'A et M repartent des défauts, une fois
+  (décision 5) ;
+- **A, C, M** : le titre de l'accueil suit la typographie française (espace insécable avant « : ») ;
+  le premier changement de réglage est écrit dans l'URL tout de suite, même dans les 200 premières
+  millisecondes de la page.
+
+**Migration de chaque cours** :
+
+- copier les deux modèles à la racine de `site/` ; ajouter le test
+  `verifieModeles(new URL('../', import.meta.url))` ; **ne plus exclure `socle/modeles/*`** de la
+  publication (`publication.toml`) : ce test le lit, côté étudiant aussi ;
+- supprimer `js/accueil.js`, `js/illustration.js`, `js/parcours.js`, `trouve` et `appliqueGlossaire`
+  (le glossaire du cours ne garde que ses données) ; les tests de `lisEtat` et `versRecherche` (M)
+  passent dans le socle ;
+- **A** : garde son `index.html` (le modèle, plus le `<template>` du schéma et un module qui greffe le
+  schéma et la galerie sur `#theme-commande` après `await demarreAccueil(config)`) et vérifie
+  seulement `['illustration.html']`.
+
+### Cours minimal et non-régression des pages (ocots-site#7)
+
+- `examples/minimal/` devient un vrai petit cours (configuration, modèles, deux illustrations, glossaire,
+  tests `verifieCours` et `verifieModeles`), `socle/` étant un lien vers la racine du dépôt.
+- `scripts/fumee.py` : `--racine` ; une page passe si elle a démarré (`data-ok="1"`, posé par les pages
+  du socle une fois KaTeX chargé) sans erreur de console. Par défaut : les pages du cours minimal.
+- `scripts/site-apres.py --pages CONFIG [--modeles …]` : le site « après » avec les pages du socle ;
+  `scripts/configs/` : les `site.config.js` des trois cours, vérifiés par `verifieCours`.
+- `scripts/styles-calcules.py` : `<noscript>` (et les scripts) ne comptent plus dans le rang d'un élément.
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
@@ -66,3 +127,4 @@ Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade
   (faux repère) et des particules. Les cours gardent temporairement leurs copies :
   leur migration, avec suppression des copies, est suivie par ocots-site#20.
   `scripts/verifie-cours.py` remplace ces copies par une façade vers le socle.
+- `js/core/dim2.js`, `js/illustrations/{plan-trace-det,portraits}.js` : sans test autonome (`dim2`), ou dépendants de la décision sur les briques d'illustration.

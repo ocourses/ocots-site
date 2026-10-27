@@ -1,9 +1,10 @@
-"""Tests de scripts/site-apres.py : liens remplacés, reste du cours calculé.
+"""Tests de scripts/site-apres.py : liens remplacés, reste du cours calculé, pages posées.
 
     python3 -m unittest discover -s scripts/tests
 """
 
 import importlib.util
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -52,6 +53,35 @@ class Construit(unittest.TestCase):
             self.assertFalse((sortie / "css/theme.css").exists())
             # Le site d'origine n'est pas touché.
             self.assertTrue((site / "css/style.css").exists())
+
+
+class PosePages(unittest.TestCase):
+    """Sur une copie du cours minimal (sans son lien socle/) ; demande Node."""
+
+    def cours(self, dossier):
+        sortie = Path(dossier) / "cours"
+        shutil.copytree(site_apres.SOCLE / "examples/minimal", sortie, ignore=shutil.ignore_patterns("socle", "*.html"))
+        return sortie
+
+    def test_modeles_js_du_socle_et_configuration_verifiee(self):
+        with tempfile.TemporaryDirectory() as dossier:
+            sortie = self.cours(dossier)
+            config = Path(dossier) / "cours.config.js"
+            shutil.move(sortie / "site.config.js", config)
+            site_apres.pose_pages(sortie, config, ["illustration.html"])
+            self.assertEqual((sortie / "site.config.js").read_text(), config.read_text())
+            self.assertEqual((sortie / "illustration.html").read_text(), (site_apres.SOCLE / "modeles/illustration.html").read_text())
+            self.assertFalse((sortie / "index.html").exists())
+            self.assertTrue((sortie / "socle/js/illustration.js").exists())
+            self.assertTrue((sortie / "socle/modeles/index.html").exists())
+
+    def test_une_configuration_fausse_arrete(self):
+        with tempfile.TemporaryDirectory() as dossier:
+            sortie = self.cours(dossier)
+            fausse = Path(dossier) / "faux.config.js"
+            fausse.write_text((sortie / "site.config.js").read_text().replace("titre: 'Cours minimal'", "titre: ''"))
+            with self.assertRaisesRegex(ValueError, r"configuration\.titre"):
+                site_apres.pose_pages(sortie, fausse)
 
 
 if __name__ == "__main__":

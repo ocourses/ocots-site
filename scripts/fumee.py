@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Test de fumée : une page du socle s'ouvre dans Chrome sans interface, sans erreur.
 
-    scripts/fumee.py [PAGE ...]     # défaut : examples/minimal/index.html
+    scripts/fumee.py [--racine DOSSIER] [PAGE ...]
 
-Sert le dépôt avec `serve.mjs`, charge chaque page, et vérifie que le script de la
-page est allé au bout (`data-ok="1"` sur `<body>`), que KaTeX a rendu une formule, et
-que la console du navigateur ne contient aucune erreur. Demande le réseau (KaTeX est
-chargé depuis un CDN). Code de sortie 1 au premier écart.
+Sert DOSSIER (par défaut le dépôt) avec `serve.mjs`, charge chaque page (par défaut
+l'accueil et les illustrations du cours minimal), et vérifie que la page a démarré
+(`data-ok="1"` sur `<body>`, posé par les pages du socle une fois KaTeX chargé) et
+que la console du navigateur ne contient aucune erreur. Demande le réseau (KaTeX
+est chargé depuis un CDN). Code de sortie 1 s'il y a un écart.
 """
 
+import argparse
 import os
 import re
 import sys
@@ -16,7 +18,12 @@ from pathlib import Path
 
 from navigateur import SOCLE, chrome, lance_chrome, servi
 
-PAGE_PAR_DEFAUT = "examples/minimal/index.html"
+PAGES_PAR_DEFAUT = [
+    "examples/minimal/index.html",
+    "examples/minimal/illustration.html?id=droite",
+    "examples/minimal/illustration.html?id=aire",
+    "examples/minimal/illustration.html?id=inconnue",
+]
 ERREUR = re.compile(
     r"CONSOLE[^\n]*(Uncaught|Failed to load|net::ERR|status of 404|"
     r"SyntaxError|TypeError|ReferenceError)",
@@ -33,17 +40,19 @@ def verifie(url, page):
     reponse = lance_chrome(f"{url}/{page}", "--dump-dom", "--enable-logging=stderr", "--v=0")
     defauts = []
     if 'data-ok="1"' not in reponse.stdout:
-        defauts.append('le script de la page n\'est pas allé au bout (pas de data-ok="1")')
-    if 'class="katex"' not in reponse.stdout:
-        defauts.append("aucune formule rendue par KaTeX")
+        defauts.append('la page n\'a pas démarré (pas de data-ok="1")')
     defauts += [f"console : {ligne.strip()[:160]}" for ligne in reponse.stderr.splitlines() if ERREUR.search(ligne)]
     return defauts
 
 
-def main(pages):
+def main():
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--racine", default=SOCLE, type=Path, help="dossier servi (défaut : le dépôt)")
+    p.add_argument("pages", nargs="*", default=PAGES_PAR_DEFAUT)
+    args = p.parse_args()
     echec = False
-    with servi(SOCLE) as url:
-        for page in pages or [PAGE_PAR_DEFAUT]:
+    with servi(args.racine) as url:
+        for page in args.pages:
             defauts = verifie(url, page)
             print(f"{page} : {'ok' if not defauts else 'ÉCHEC'}")
             for defaut in defauts:
@@ -53,4 +62,4 @@ def main(pages):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

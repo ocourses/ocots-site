@@ -2,7 +2,7 @@
   "name": "exemple-minimal",
   "private": true,
   "type": "module",
-  "description": "Un cours minimal qui consomme le socle : sert de test de non-régression de l'intégration.",
+  "description": "Un cours minimal qui consomme le socle comme un vrai cours (socle/ est un lien vers la racine) : sert d'exemple et de test de non-régression.",
   "scripts": {
     "test": "node --test"
   }
