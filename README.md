@@ -144,9 +144,11 @@ Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans int
 ## Briques de systèmes linéaires
 
 `js/core/dim2.js`, `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont
-partagés par `automatique` et `calcul-differentiel-edo`. Les tests de caractérisation
-de `dim2` figent les onze cas du TD1, les spectres, l'exponentielle et les directions
-propres avant la migration des cours.
+partagés par `automatique` et `calcul-differentiel-edo`. Leurs tests de caractérisation
+(décision 13) figent ce qu'ils rendent avant la migration des cours : nature et stabilité
+des onze cas du TD1 et leurs frontières, spectres, exponentielle, directions propres, et
+ce que dessinent le plan et les portraits, relevé par un faux repère
+(`tests/aides/faux-repere.js`).
 
 La dépendance de migration est explicite :
 
@@ -157,10 +159,10 @@ dim2 + tests
     -> migration d'automatique-enseignants#428
 ```
 
-Cette PR extrait les fichiers du socle sans modifier encore les dépôts des cours.
-Les cours gardent donc temporairement leurs copies et leurs imports locaux ; chaque
-PR de migration devra remplacer la copie par une façade `commun.js` ou un import du
-socle, vérifier ses tests et supprimer ce qui est devenu redondant.
+Les cours en gardent une copie jusqu'à leur migration (ocots-site#20), qui la remplace
+par un import du socle. D'ici là, `scripts/verifie-cours.py` remplace ces copies par une
+façade vers le socle (`export * from '../briques/…'`) : les tests des cours exécutent
+déjà le code du socle.
 
 ## CI et déploiement
 

@@ -34,6 +34,13 @@ SITES = {
     "calcul": os.environ.get("SITE_CALCUL", RACINE / "calcul_differentiel_edo/calcul-differentiel-edo-enseignants/site"),
     "mesure": os.environ.get("SITE_MESURE", RACINE / "mesure_et_integration/integration/mesure-integration-enseignants/site"),
 }
+# Briques reprises dans le socle dont les cours gardent une copie : la copie du
+# cours devient une façade vers le socle, pour que ses tests exécutent le code du
+# socle. C'est la forme que prendra la migration (ocots-site#20).
+FACADES = {
+    "js/illustrations/plan-trace-det.js": "../briques/plan-trace-det.js",
+    "js/illustrations/portraits.js": "../briques/portraits.js",
+}
 PROPRE = json.loads((SOCLE / "scripts/propre-aux-cours.json").read_text())
 
 
@@ -82,6 +89,9 @@ def verifie(cours, site):
             cible.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(SOCLE / fichier, cible)
         (copie / "js/illustrations/commun.js").write_text(facade(cours, original))
+        for chemin, cible in FACADES.items():
+            if (copie / chemin).exists():
+                (copie / chemin).write_text(f"export * from '{cible}';\n")
         apres, echecs_apres = tests_reussis(copie)
     manquants = sorted(avant - apres)
     nouveaux_echecs = sorted(echecs_apres - echecs_avant)

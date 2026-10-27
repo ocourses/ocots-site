@@ -37,12 +37,35 @@ test('spectre : réels distincts, double et complexes conjuguées', () => {
   assert.deepEqual(spectre(0, 0).valeurs, [{ re: 0, im: 0 }, { re: 0, im: 0 }]);
 });
 
-test('nature : les onze cas du TD1 gardent leur classification', () => {
-  const attendus = Object.fromEntries(CAS_TD1.map(({ tr, det, cas }) => [cas, nature(tr, det)]));
-  assert.deepEqual(Object.fromEntries(Object.entries(attendus).map(([cas, n]) => [cas, n.cas])), Object.fromEntries(CAS_TD1.map(({ cas }) => [cas, cas])));
-  assert.equal(attendus['P₁'].stabilite, 'asymptotiquement stable');
-  assert.equal(attendus['P₈'].stabilite, 'stable');
-  assert.equal(attendus['P₃'].stabilite, 'instable');
+test('nature : les onze cas du TD1, nom et stabilité affichés compris', () => {
+  assert.deepEqual(
+    CAS_TD1.map(({ cas, tr, det }) => [cas, tr, det, nature(tr, det).cas, nature(tr, det).nom, nature(tr, det).stabilite]),
+    [
+      ['P₁', -3, 2, 'P₁', 'nœud (puits)', 'asymptotiquement stable'],
+      ['P₂', 3, 2, 'P₂', 'nœud (source)', 'instable'],
+      ['P₃', 0, -1, 'P₃', 'col (point selle)', 'instable'],
+      ['P₄', -3, 0, 'P₄', 'droite d’équilibres, les autres orbites la rejoignent', 'stable'],
+      ['P₅', 0, 0, 'P₅', 'valeur propre double nulle, non diagonalisable', 'instable'],
+      ['P₆', 2, 0, 'P₆', 'droite d’équilibres, les autres orbites s’en éloignent', 'instable'],
+      ['P₇', -2, 4, 'P₇', 'foyer (puits)', 'asymptotiquement stable'],
+      ['P₈', 0, 3, 'P₈', 'centre', 'stable'],
+      ['P₉', 2, 4, 'P₉', 'foyer (source)', 'instable'],
+      ['P₁₀', 4, 4, 'P₁₀', 'nœud impropre (source)', 'instable'],
+      ['P₁₁', -4, 4, 'P₁₁', 'nœud impropre (puits)', 'asymptotiquement stable'],
+    ],
+  );
+});
+
+test('nature : aux frontières (det = 0, tr = 0, Δ = 0), à 10⁻⁹ près', () => {
+  const cas = (tr, det) => nature(tr, det).cas;
+  assert.equal(cas(0, 1e-10), 'P₅', 'det nul à la tolérance près');
+  assert.equal(cas(0, 1e-8), 'P₈', 'au-delà de la tolérance : centre');
+  assert.equal(cas(-1e-10, 2), 'P₈', 'tr nul à la tolérance près');
+  assert.equal(cas(-1e-8, 2), 'P₇');
+  assert.equal(cas(-2, 1 + 1e-10), 'P₁₁', 'Δ nul à la tolérance près');
+  assert.equal(cas(-2, 1 + 1e-8), 'P₇', 'Δ < 0 au-delà');
+  assert.equal(cas(-2, 1 - 1e-8), 'P₁', 'Δ > 0 au-delà');
+  assert.equal(cas(0, -1e-8), 'P₃');
 });
 
 test('exponentielle : t=0 donne I et les cas diagonaux sont exacts', () => {
