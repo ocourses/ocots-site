@@ -188,3 +188,29 @@ Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans int
   `id-token: write`. Le fichier du dépôt étudiant est publié depuis le dépôt enseignant
   (`etudiant/.github/workflows/site.yml`) : le remplacer par ce modèle fait partie de la migration d'un cours.
 - Pas encore vérifié ici : le schéma de `site.config.js` (il arrive avec ocots-site#7).
+
+## Versions et publication
+
+Versions sémantiques, en **`v0.x`** tant que les trois cours ne sont pas migrés (l'interface bouge
+encore), puis **`v1.0.0`**. Un cours **épingle une version** (`git -C site/socle checkout vX.Y.Z`).
+
+L'**interface publique**, donc ce qui fait monter la version :
+
+- **majeure** (en `v0.x` : la mineure) : le format de `site.config.js`, les points d'extension, un export
+  documenté d'une brique (`js/briques/commun.js`, `repere.js`, `controls.js`…) qui change ou disparaît ;
+- **mineure** : une brique ou une clé de configuration ajoutée ;
+- **corrective** : le reste.
+
+Le `CHANGELOG.md` indique, pour chaque version, les changements de comportement visibles cours par
+cours (nouveau bouton, nouvelle mise en page).
+
+Publier une version :
+
+1. PR `chore(release): vX.Y.Z` : la section « Non publié » du `CHANGELOG.md` devient
+   `## vX.Y.Z — date`, et `package.json` porte `"version": "X.Y.Z"` ;
+2. une fois la PR fusionnée, tag annoté sur le commit de merge :
+   `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` ;
+3. le workflow `release.yml` lance les tests, vérifie que `package.json` annonce bien le tag, et crée
+   la release GitHub avec la section du CHANGELOG pour notes (il échoue si elle manque) ;
+4. chaque cours monte l'épingle de `site/socle/`, une PR par cours, avec les changements de
+   comportement de la section.
