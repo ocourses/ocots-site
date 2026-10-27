@@ -18,6 +18,10 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
   (le gabarit d'une sortie remplace `\phantom{x}` par `x`, les chiffres et signes par des symboles
   de même largeur). Le test vérifie aussi qu'il voit une largeur qui change (`latexNombre`,
   `latexScientifique`). C'est ce qui rend WEB5 vérifiable (#32).
+- `latexComplexeFixe` et `latexMatriceFixe` sont testées dans le socle (#37), valeurs et largeur.
+  Un complexe garde sa largeur tant qu'il reste réel ou reste complexe ; une matrice, tant que
+  la partie entière de son plus grand coefficient garde son nombre de chiffres (le test le montre
+  au passage de 9 à 10).
 
 ---
 
