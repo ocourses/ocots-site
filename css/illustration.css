@@ -254,8 +254,8 @@ body.page-illustration .entete-barre h1 {
 }
 
 /* Tailles de police des pages d'illustration : un seul corps pour tout le texte
-   (cours, essais, notes, verdicts), le même que les notes du simulateur ; les
-   formules ont le même corps partout, dans les deux types de pages. */
+   (cours, essais, notes, verdicts), et le même que celui des pages propres à un
+   cours ; les formules ont le même corps partout. */
 body.page-illustration {
   --taille-texte: 0.9rem;
 }

@@ -61,7 +61,9 @@ JS (`themes`, `glossaire`), qu'un JSON ne peut pas exprimer.
 ## Clés
 
 Chaque clé est utilisée par les trois cours : toutes sont obligatoires. Un
-défaut qu'aucun cours n'emploie serait un chemin de code jamais exercé.
+défaut qu'aucun cours n'emploie serait un chemin de code jamais exercé. Seule
+exception, `pagesDuTheme` (décision 15). Une clé inconnue est une faute (une faute
+de frappe ne passe pas en silence).
 
 | Clé | Type | Contrainte vérifiée | Rôle |
 |-----|------|---------------------|------|
@@ -73,6 +75,7 @@ défaut qu'aucun cours n'emploie serait un chemin de code jamais exercé.
 | `themes` | tableau | voir ci-dessous | Le catalogue : thèmes et illustrations (même forme qu'aujourd'hui). Le socle en déduit `trouve`. |
 | `glossaire` | objet | chaque entrée a `formes` (non vide), `definition`, `source` | Termes du cours. Le moteur est dans le socle. |
 | `charge` | `(id) => Promise<module>` | fonction | Charge le module d'une illustration. Un `import()` relatif ne sort pas du fichier où il est écrit : c'est le cours qui le fait. |
+| `pagesDuTheme` | `(theme) => [{ genre, id, titre, lien }]` | fonction, **facultative** | Pages du cours insérées dans le parcours après les illustrations du thème (précédent/suivant, retour à la carte). Seul A s'en sert, pour le simulateur (décision 15). |
 
 Forme de `themes` (inchangée) : `[{ id, titre, source, illustrations: [{ id,
 titre, resume, source, disponible }] }]`. Les identifiants d'illustration sont
@@ -87,7 +90,7 @@ endroit, dans le module d'illustration du socle, jamais par l'appelant.
   s'il est importé. Aucun drapeau.
 - `katex` : la version est une constante du socle, dans un seul fichier.
 - `clePreferences` : la clé suit `id` (décision 5).
-- `extensions` : un seul cours (A) en a besoin ; voir
+- `extensions` (un objet de crochets) : seul `pagesDuTheme` est nécessaire ; voir
   [Points d'extension](#points-dextension).
 
 ## Validation
@@ -100,11 +103,18 @@ ligne.
   (clé manquante, type erroné, format, identifiant en double), pour qu'un
   cours mal configuré se corrige en une fois.
 - `verifieCours(config)` appelle `valideConfig`, puis, pour chaque
-  illustration `disponible`, charge son module par `config.charge` et vérifie
-  le contrat ci-dessous : `monte` est une fonction, chaque clé d'un essai est
-  une clé de `etat`, chaque valeur textuelle d'un essai est permise par
-  `choix`, chaque terme de `termes` est une entrée du glossaire. C'est le test
-  aujourd'hui recopié dans les trois cours.
+  illustration `disponible` (et elles seules), charge son module par
+  `config.charge` et vérifie le contrat ci-dessous : pas de clé inconnue,
+  `monte` est une fonction, chaque réglage et chaque préférence d'un essai est
+  une clé connue, **du même type** que sa valeur par défaut (sinon la page
+  l'ignorerait en silence) et, pour un texte, permise par `choix`, chaque terme
+  de `termes` est une entrée du glossaire. Elle vérifie enfin le parcours
+  (pages ajoutées par `pagesDuTheme` bien formées, sans doublon). C'est le test
+  aujourd'hui recopié dans les trois cours. Un module qui ne se charge pas est
+  une faute nommée, pas une exception qui masque les autres.
+
+Le code est dans `js/config.js` ; `fautesConfig` et `fautesCours` rendent la liste
+des fautes sans lever.
 
 ```js
 // tests/config.test.js d'un cours
@@ -151,8 +161,8 @@ sans navigateur.
 
 ```
 site/
-  index.html          gabarit minimal (~10 lignes)
-  illustration.html   gabarit minimal
+  index.html          copie de socle/modeles/index.html
+  illustration.html   copie de socle/modeles/illustration.html
   site.config.js
   css/cours.css       surcouche optionnelle
   js/illustrations/   modules du cours (+ catalogue.js, glossaire.js : données)
@@ -160,17 +170,14 @@ site/
   tests/              tests propres au cours
 ```
 
-Un gabarit HTML du cours tient en quelques lignes : liens `socle/css/*.css`,
-`css/cours.css`, un module qui importe `site.config.js` et appelle
-`demarreAccueil(config)` ou `demarreIllustration(config)`, et un `<noscript>`
-qui dit que la page demande JavaScript. Le balisage d'`illustration.html`
-(onglets, fil d'Ariane) est dans le socle, produit par JS. Titres et textes de
-l'accueil viennent de la configuration.
-
-Les deux gabarits minimaux étant les mêmes dans tous les cours, le socle les
-fournit comme modèles (`modeles/index.html`, `modeles/illustration.html`), et un
-test du socle, exécuté dans le cours, vérifie que les gabarits du cours leur
-sont identiques.
+Les deux gabarits sont des modèles statiques complets du socle (décision 6,
+révisée) : le balisage d'aujourd'hui (en-tête, fil d'Ariane, onglets), les liens
+`socle/css/*.css` puis `css/cours.css`, un `<noscript>` qui dit que la page
+demande JavaScript, et un module qui importe `site.config.js` et appelle
+`demarreAccueil(config)` ou `demarreIllustration(config)`. Le JavaScript ne
+remplit que les textes (titres, intro, signalement) à partir de la configuration.
+Le cours copie les modèles, et un test du socle, exécuté dans le cours, vérifie
+que ses gabarits leur sont identiques.
 
 ## KaTeX
 
@@ -194,10 +201,16 @@ Un cours étend le socle de trois façons, sans modifier un fichier du socle :
 3. **Pages à lui** : une page HTML du cours qui importe librement les modules du
    socle (`ui/`, `format`, `katex`). Aucun registre de pages.
 
-Rien d'autre n'est défini. Le simulateur d'A a besoin de deux choses de plus
-(des pages dans le parcours, un bloc dans l'accueil) : leur forme est le sujet
-de ocourses/ocots-site#7, quand le relevé de `core/` et `ui/panneaux` sera fait.
-Inventer maintenant un mécanisme à un seul usage serait spéculatif.
+4. **Pages dans le parcours** : `pagesDuTheme(theme)` insère des pages du cours
+   après les illustrations d'un thème (décision 15).
+5. **Greffe sur l'accueil** : l'accueil produit une section `#theme-<id>` par
+   thème ; cet identifiant fait partie du contrat. Un cours qui veut ajouter un
+   bloc à un thème appelle `demarreAccueil(config)`, puis le greffe dans la section.
+
+Rien d'autre n'est défini. Le simulateur d'A utilise 3, 4 et 5 : ses pages
+(`exemple.html`) dans le parcours, son schéma et sa galerie greffés sur
+`#theme-commande`. Son code reste dans A, et le mot « simulateur » n'apparaît pas
+dans le socle.
 
 ## Stratégie de test
 
@@ -262,7 +275,8 @@ barrée, et la nouvelle est ajoutée en dessous avec sa date.
 | 3 | `trouve()` et moteur du glossaire | Dans le socle. | Identiques (même empreinte) dans les trois sites ; seules les données diffèrent. |
 | 4 | Version de référence d'`illustration.js` | M. | Seule à avoir « Réinitialiser » (`791511d`, « partout »). Les écarts A/C/M se réduisent au suffixe du titre et à la clé de préférences, qui deviennent `titre` et `id`. Le bouton vaut pour tous les cours, sans réglage. |
 | 5 | Clés de préférences | Pas de `clePreferences` : la clé suit `id`. On accepte une remise à zéro unique des préférences d'affichage d'A et M. | Sites de trois jours. `Preferences` traite déjà une entrée absente comme un retour aux défauts : aucun code de migration. À signaler dans le `CHANGELOG` de la version qui migre chaque cours. |
-| 6 | Gabarits HTML | Pages minimales dans le cours, balisage produit par le socle, `<noscript>` ; gabarits fournis comme modèles par le socle et vérifiés par un test. | Un seul exemplaire du balisage, de KaTeX et des liens CSS. La page est vide sans JavaScript, comme l'accueil aujourd'hui, et le dit. |
+| 6 | Gabarits HTML | ~~Pages minimales dans le cours, balisage produit par le socle, `<noscript>` ; gabarits fournis comme modèles par le socle et vérifiés par un test.~~ | ~~Un seul exemplaire du balisage, de KaTeX et des liens CSS.~~ |
+| 6 (révisée le 2026-10-26, ocots-site#7) | Gabarits HTML | Modèles **statiques complets** dans le socle (`modeles/index.html`, `modeles/illustration.html` : le balisage d'aujourd'hui, liens `socle/…`, `<noscript>`), copiés dans le cours et vérifiés par un test d'égalité ; le JavaScript ne remplit que les textes. | `illustration.html` est déjà identique dans les trois cours, `index.html` ne diffère que par quatre textes de la configuration : le modèle suffit à n'avoir qu'un exemplaire. Produire le balisage par JavaScript n'apporterait rien et serait du code à écrire et tester (KISS, YAGNI). |
 | 7 | KaTeX | Chargé par le socle depuis le CDN, version et empreinte SRI dans le chargeur. Vendorisé seulement si l'usage hors ligne devient un besoin. | Aucun changement de comportement ; le chargeur unique rend la vendorisation locale le jour venu. |
 | 8 | Drapeaux `modules` | Aucun. | Un module ES inutilisé n'est pas chargé. |
 | 9 | Clés `intro`, `glossaire` | Obligatoires. | Les trois cours ont une intro et un glossaire. |
@@ -271,13 +285,6 @@ barrée, et la nouvelle est ajoutée en dessous avec sa date.
 | 12 | Briques d'illustration | `js/briques/` dans le socle (`commun.js`, puis `plan-trace-det`, `portraits`). | La conception réserve `js/illustrations/` aux modules du cours, qui garde son propre `commun.js` : deux fichiers de même nom et de rôles différents seraient source de confusion. |
 | 13 | Code sans test autonome (`dim2`) | Écrire des tests de caractérisation avant de le reprendre. | Le code est pur : figer ses sorties actuelles sur des cas typiques est peu coûteux, et c'est le filet de la migration. |
 | 14 | Versions | SemVer, en `v0.x` tant que les trois cours ne sont pas migrés, puis `v1.0.0`. Tag annoté `vX.Y.Z` sur le commit de merge, release créée par `release.yml` à partir du CHANGELOG. | L'interface (format de `site.config`, points d'extension, exports documentés des briques) bouge encore ; les cours épinglent une version précise. Voir le README. |
+| 15 | Simulateur | Il reste dans `automatique`. Le socle lui offre `pagesDuTheme` (seule clé facultative) et la greffe sur `#theme-<id>` de l'accueil ; le drapeau `simulateur` sort du catalogue. | Un seul cours l'emploie, il fait plus de 2 500 lignes et dépend de uPlot : c'est un domaine, pas une brique. Sans `pagesDuTheme`, A garderait une copie divergente de `parcours.js` (ocots-site#7). |
 
-Reportées :
-
-- **Simulateur** (socle ou cours ?) : ocots-site#7, après le relevé de `core/`
-  et `ui/panneaux`. Un seul usage : aucun mécanisme d'extension inventé d'ici
-  là.
-- **Parcours** : si le simulateur reste dans A, préférer un point d'extension
-  minimal du parcours (une clé dont le socle fusionne les pages) à une copie
-  locale de `parcours.js`, qui serait une divergence de plus. À trancher en
-  ocots-site#7 sur l'exemple d'A.
+Reportées : aucune. Le simulateur et le parcours sont tranchés par la décision 15.

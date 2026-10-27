@@ -123,6 +123,25 @@ Le script pose les fichiers du socle sur une copie de chaque `site/`, remplace s
 `scripts/propre-aux-cours.json`), et rejoue les tests du cours. Il compare les **noms**
 des tests réussis avant et après : un test manquant ou en échec fait échouer le script.
 
+## Configuration d'un cours
+
+Un cours décrit ce qui le distingue dans `site.config.js` (clés et contrat : `docs/conception.md`) :
+
+- `js/config.js` : `valideConfig(config)` vérifie la forme de la configuration, sans rien charger ;
+  `verifieCours(config)` charge en plus chaque illustration disponible et vérifie son module (essais,
+  préférences, termes du glossaire) et le parcours. Toutes les fautes sont listées dans une seule
+  erreur. Dans un cours, un test d'une ligne :
+
+  ```js
+  import { verifieCours } from '../socle/js/config.js';
+  import config from '../site.config.js';
+  test('le cours respecte le contrat du socle', () => verifieCours(config));
+  ```
+
+- `js/catalogue.js` : `trouve(themes, id)`, `disponibles(theme)` ;
+- `js/parcours.js` : `parcours(config)` (l'ordre de lecture, avec les pages de `pagesDuTheme`),
+  `precedente`, `suivante`, `ancre`, `installeNavigation(pages, genre, id)`.
+
 ## CSS
 
 Le socle fournit `css/theme.css` (la charte, en variables) et `css/style.css` (les composants).

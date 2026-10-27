@@ -37,9 +37,15 @@ SITES = {
 PROPRE = json.loads((SOCLE / "scripts/propre-aux-cours.json").read_text())
 
 
+# Fichiers du socle qui ne remplacent pas encore ceux des cours : la couche de
+# configuration (ocots-site#7) prend ses données en argument, et chaque cours
+# l'adopte à sa migration. Les poser ici mesurerait la migration, pas la fusion.
+A_LA_MIGRATION = {"js/config.js", "js/catalogue.js", "js/parcours.js"}
+
+
 def fichiers_du_socle():
     suivis = subprocess.run(["git", "-C", SOCLE, "ls-files", "js", "css/theme.css"], capture_output=True, text=True, check=True)
-    return suivis.stdout.split()
+    return [f for f in suivis.stdout.split() if f not in A_LA_MIGRATION]
 
 
 def bloc(source, nom):
