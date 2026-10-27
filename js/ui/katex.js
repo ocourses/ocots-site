@@ -10,10 +10,10 @@ const options = { throwOnError: false };
 // de version, recalculer chaque empreinte sur le fichier servi :
 //   curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A
 const CDN = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist';
-export const KATEX = {
-  feuille: { href: `${CDN}/katex.min.css`, integrity: 'sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+' },
-  script: { src: `${CDN}/katex.min.js`, integrity: 'sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg' },
-};
+export const KATEX = Object.freeze({
+  feuille: Object.freeze({ href: `${CDN}/katex.min.css`, integrity: 'sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+' }),
+  script: Object.freeze({ src: `${CDN}/katex.min.js`, integrity: 'sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg' }),
+});
 
 let chargement = null;
 
