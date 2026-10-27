@@ -1,0 +1,9 @@
+{
+  "name": "exemple-minimal",
+  "private": true,
+  "type": "module",
+  "description": "Un cours minimal qui consomme le socle : sert de test de non-régression de l'intégration.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

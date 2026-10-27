@@ -1,0 +1,64 @@
+name: Site (workflow réutilisable)
+
+# Tests puis publication d'un site de cours sur GitHub Pages. Appelé par le dépôt
+# étudiant de chaque cours (voir modeles/site.yml), épinglé par tag :
+#   uses: ocourses/ocots-site/.github/workflows/site.yml@vX.Y.Z
+# Le dépôt appelant accorde `pages: write` et `id-token: write` ; réglage unique :
+# Settings → Pages → Source : GitHub Actions.
+
+on:
+  workflow_call:
+    inputs:
+      dossier:
+        description: Dossier du site, relatif à la racine du dépôt
+        type: string
+        default: site
+      node-version:
+        type: string
+        default: "22"
+      submodules:
+        description: Initialiser les sous-modules (le dépôt étudiant n'en a pas ; un dépôt enseignant, si)
+        type: boolean
+        default: false
+      deployer:
+        description: Publier sur Pages après les tests (hors pull request)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: ${{ inputs.submodules }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: npm test
+        working-directory: ${{ inputs.dossier }}
+
+  deploiement:
+    # Seulement après un push sur main (ou à la demande), pas sur une pull request.
+    if: inputs.deployer && github.event_name != 'pull_request'
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: ${{ inputs.submodules }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ inputs.dossier }}
+      - id: pages
+        uses: actions/deploy-pages@v4

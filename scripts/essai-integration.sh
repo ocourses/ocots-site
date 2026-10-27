@@ -17,6 +17,10 @@
 # est ignorée. PORT=… change le port du serveur (8765 par défaut).
 set -eu
 
+# publier-etudiant commite lui-même : une identité, si le poste (ou la CI) n'en a pas.
+export GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-essai} GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-essai@essai}
+export GIT_COMMITTER_NAME=${GIT_COMMITTER_NAME:-essai} GIT_COMMITTER_EMAIL=${GIT_COMMITTER_EMAIL:-essai@essai}
+
 PUBLICATION=${1:-$(dirname "$0")/../../ocots-publication}
 PE="$PUBLICATION/bin/publier-etudiant"
 [ -f "$PE" ] || { echo "publier-etudiant introuvable : $PE (passer le chemin d'ocots-publication en argument)" >&2; exit 1; }
@@ -50,7 +54,8 @@ echo "publier-etudiant $version"
 
 etape "1. Le socle factice : css, js, tests, et des outils à ne pas publier (tag v0.1.0)"
 socle=$tmp/socle
-mkdir -p "$socle/css" "$socle/js" "$socle/tests" "$socle/scripts" "$socle/docs"
+mkdir -p "$socle/css" "$socle/js" "$socle/tests" "$socle/scripts" "$socle/docs" \
+  "$socle/examples/minimal" "$socle/modeles" "$socle/.github/workflows"
 git init -q -b main "$socle"
 printf '{"private":true,"type":"module","scripts":{"test":"node --test"}}\n' > "$socle/package.json"
 cat > "$socle/css/theme.css" <<'EOF'
@@ -94,6 +99,9 @@ test('le socle a ses tests', () => assert.equal(1 + 1, 2));
 EOF
 echo "outil du socle" > "$socle/scripts/outil.sh"
 echo "note du socle" > "$socle/docs/note.md"
+echo "exemple du socle" > "$socle/examples/minimal/index.html"
+echo "modèle du socle" > "$socle/modeles/site.yml"
+echo "workflow du socle" > "$socle/.github/workflows/site.yml"
 g "$socle" add -A && g "$socle" commit -q -m "socle v0.1.0" && g "$socle" tag v0.1.0
 
 etape "2. Dépôt enseignant : site/ avec le socle en sous-module"
@@ -130,7 +138,8 @@ worktree = "$tmp/etu-publication"
 source = "site"
 cible = "site"
 miroir = true
-exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*"]
+exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
+  "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
 EOF
 g "$ens" add -A && g "$ens" commit -q -m "cours"
 echo "gitlink : $(g "$ens" ls-files --stage site/socle)"
@@ -164,7 +173,8 @@ for f in site/socle/package.json site/socle/js/accueil.js site/socle/css/theme.c
   test -f "$etu/$f" || echoue "manque côté étudiant : $f"
   echo "présent côté étudiant : $f"
 done
-for f in site/socle/.git .gitmodules site/socle/scripts site/socle/docs; do
+for f in site/socle/.git .gitmodules site/socle/scripts site/socle/docs \
+  site/socle/examples site/socle/modeles site/socle/.github; do
   test ! -e "$etu/$f" || echoue "publié à tort côté étudiant : $f"
   echo "absent côté étudiant : $f"
 done

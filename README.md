@@ -45,7 +45,8 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   aussi les dossiers du cours qui portent ce nom) :
 
   ```toml
-  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*"]
+  exclure = ["node_modules", ".DS_Store", "socle/scripts/*", "socle/docs/*",
+    "socle/examples/*", "socle/modeles/*", "socle/.github/*"]
   ```
 
 - **Tests** : `npm test` dans `site/` exécute aussi les tests du socle, qui
@@ -160,3 +161,44 @@ Cette PR extrait les fichiers du socle sans modifier encore les dépôts des cou
 Les cours gardent donc temporairement leurs copies et leurs imports locaux ; chaque
 PR de migration devra remplacer la copie par une façade `commun.js` ou un import du
 socle, vérifier ses tests et supprimer ce qui est devenu redondant.
+
+## CI et déploiement
+
+- **CI du socle** (`.github/workflows/tests.yml`) : `npm test` (Node 22 et 24), `npm run test:outils`,
+  un cours minimal qui consomme le socle (`examples/minimal/` : ses tests, puis `scripts/fumee.py`, la page
+  ouverte dans Chrome sans interface, sans erreur de console), l'essai d'intégration
+  (`scripts/essai-integration.sh`, avec `ocots-publication` v1.2.0) et le workflow Pages ci-dessous, appelé sur
+  l'exemple sans publier.
+- **Workflow Pages réutilisable** (`.github/workflows/site.yml`) : les tests du site (`npm test` dans son
+  dossier), puis la publication sur GitHub Pages hors pull request. Paramètres : `dossier` (défaut `site`),
+  `node-version` (22), `submodules` (faux : le dépôt étudiant n'en a pas), `deployer` (vrai). Un dépôt étudiant
+  l'appelle avec `modeles/site.yml`, **épinglé par tag** (`@vX.Y.Z`), en accordant `pages: write` et
+  `id-token: write`. Le fichier du dépôt étudiant est publié depuis le dépôt enseignant
+  (`etudiant/.github/workflows/site.yml`) : le remplacer par ce modèle fait partie de la migration d'un cours.
+- Pas encore vérifié ici : le schéma de `site.config.js` (il arrive avec ocots-site#7).
+
+## Versions et publication
+
+Versions sémantiques, en **`v0.x`** tant que les trois cours ne sont pas migrés (l'interface bouge
+encore), puis **`v1.0.0`**. Un cours **épingle une version** (`git -C site/socle checkout vX.Y.Z`).
+
+L'**interface publique**, donc ce qui fait monter la version :
+
+- **majeure** (en `v0.x` : la mineure) : le format de `site.config.js`, les points d'extension, un export
+  documenté d'une brique (`js/briques/commun.js`, `repere.js`, `controls.js`…) qui change ou disparaît ;
+- **mineure** : une brique ou une clé de configuration ajoutée ;
+- **corrective** : le reste.
+
+Le `CHANGELOG.md` indique, pour chaque version, les changements de comportement visibles cours par
+cours (nouveau bouton, nouvelle mise en page).
+
+Publier une version :
+
+1. PR `chore(release): vX.Y.Z` : la section « Non publié » du `CHANGELOG.md` devient
+   `## vX.Y.Z — date`, et `package.json` porte `"version": "X.Y.Z"` ;
+2. une fois la PR fusionnée, tag annoté sur le commit de merge :
+   `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` ;
+3. le workflow `release.yml` lance les tests, vérifie que `package.json` annonce bien le tag, et crée
+   la release GitHub avec la section du CHANGELOG pour notes (il échoue si elle manque) ;
+4. chaque cours monte l'épingle de `site/socle/`, une PR par cours, avec les changements de
+   comportement de la section.
