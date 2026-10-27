@@ -8,7 +8,9 @@ import {
   chiffresEntiers,
   etiquettesAxe,
   latexComplexe,
+  latexComplexeFixe,
   latexIntervalle,
+  latexMatriceFixe,
   latexNombre,
   latexNombreFinal,
   latexNombreFixe,
@@ -143,6 +145,19 @@ test('latexScientifiqueFixe : signe, mantisse et exposant de largeur constante',
   assert.equal(latexScientifiqueFixe(Infinity), '+\\infty');
 });
 
+test('latexComplexeFixe : partie réelle à place de signe, signe de la partie imaginaire écrit', () => {
+  assert.equal(latexComplexeFixe({ re: -1.234, im: 0 }), '-1{,}23');
+  assert.equal(latexComplexeFixe({ re: 0.5, im: -2 }), '\\phantom{-}0{,}50 - 2{,}00\\,i');
+  assert.equal(latexComplexeFixe({ re: 0, im: 3 }), '\\phantom{-}0{,}00 + 3{,}00\\,i');
+});
+
+test('latexMatriceFixe : les coefficients prennent la largeur du plus grand', () => {
+  assert.equal(
+    latexMatriceFixe([[-0.2, 12.5], [3, -0.004]]),
+    '\\begin{pmatrix} -\\phantom{0}0{,}20 & \\phantom{-}12{,}50 \\\\ \\phantom{-}\\phantom{0}3{,}00 & \\phantom{-}\\phantom{0}0{,}00 \\end{pmatrix}',
+  );
+});
+
 // Largeur : WEB5 demande qu'un nombre qui change ne change pas de largeur. Le gabarit d'une
 // sortie LaTeX remplace ce qui est réservé (\phantom{x}) par x, et les signes et chiffres par
 // des symboles de même largeur : deux sorties de même gabarit ont la même largeur.
@@ -168,6 +183,21 @@ test('largeur constante sur toute la plage : latexScientifiqueFixe', () => {
 test('largeur constante sur toute la plage : nombreScientifique', () => {
   const longueurs = new Set([...decades, 0, Infinity, -Infinity, NaN].map((v) => nombreScientifique(v, 2).length));
   assert.equal(longueurs.size, 1, [...longueurs].join(' | '));
+});
+
+test('largeur constante sur toute la plage : latexComplexeFixe, réel ou complexe', () => {
+  const parties = pas(-9.99, 9.99, 40);
+  memeLargeur('latexComplexeFixe, réel', parties, (re) => latexComplexeFixe({ re, im: 0 }));
+  const complexes = parties.flatMap((re) => parties.filter((im) => im !== 0).map((im) => ({ re, im })));
+  memeLargeur('latexComplexeFixe, complexe', complexes, (z) => latexComplexeFixe(z));
+});
+
+test('largeur constante sur toute la plage : latexMatriceFixe, coefficients sous 10', () => {
+  // La largeur suit le plus grand coefficient : constante tant que sa partie
+  // entière garde le même nombre de chiffres.
+  const v = pas(-9.99, 9.99, 20);
+  memeLargeur('latexMatriceFixe', v.flatMap((a) => v.map((b) => [[a, b], [b, -a]])), (M) => latexMatriceFixe(M));
+  assert.throws(() => memeLargeur('latexMatriceFixe', [[[9]], [[10]]], (M) => latexMatriceFixe(M)));
 });
 
 test('le test de largeur voit une largeur qui change (garde du test lui-même)', () => {
