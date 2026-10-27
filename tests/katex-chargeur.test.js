@@ -76,6 +76,12 @@ test('chargeKatex : un fichier refusé (empreinte, réseau) rejette en le nomman
   await assert.rejects(promesse, (e) => e.message.includes(KATEX.script.src));
 });
 
+test('KATEX : figé, une page ne peut pas changer la version ni l’empreinte', async () => {
+  const { KATEX } = await prepare();
+  assert.throws(() => (KATEX.script.integrity = 'sha384-autre'), TypeError);
+  assert.throws(() => (KATEX.feuille = {}), TypeError);
+});
+
 test('KATEX : une seule version, des empreintes sha384', async () => {
   const { KATEX } = await prepare();
   const versions = [KATEX.feuille.href, KATEX.script.src].map((url) => url.match(/katex@([\d.]+)\//)?.[1]);
