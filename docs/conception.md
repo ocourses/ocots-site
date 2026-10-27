@@ -338,6 +338,7 @@ barrée, et la nouvelle est ajoutée en dessous avec sa date.
 | 11 | Test du catalogue | `verifieCours(config)` dans le socle. | Le même test est recopié dans les trois cours. |
 | 12 | Briques d'illustration | `js/briques/` dans le socle (`commun.js`, puis `plan-trace-det`, `portraits`). | La conception réserve `js/illustrations/` aux modules du cours, qui garde son propre `commun.js` : deux fichiers de même nom et de rôles différents seraient source de confusion. |
 | 13 | Code sans test autonome (`dim2`) | Écrire des tests de caractérisation avant de le reprendre. | Le code est pur : figer ses sorties actuelles sur des cas typiques est peu coûteux, et c'est le filet de la migration. |
+| 14 | Versions | SemVer, en `v0.x` tant que les trois cours ne sont pas migrés, puis `v1.0.0`. Tag annoté `vX.Y.Z` sur le commit de merge, release créée par `release.yml` à partir du CHANGELOG. | L'interface (format de `site.config`, points d'extension, exports documentés des briques) bouge encore ; les cours épinglent une version précise. Voir le README. |
 | 15 | Simulateur | Il reste dans `automatique`. Le socle lui offre `pagesDuTheme` (seule clé facultative) et la greffe sur `#theme-<id>` de l'accueil ; le drapeau `simulateur` sort du catalogue. | Un seul cours l'emploie, il fait plus de 2 500 lignes et dépend de uPlot : c'est un domaine, pas une brique. Sans `pagesDuTheme`, A garderait une copie divergente de `parcours.js` (ocots-site#7). |
 
 Reportées : aucune. Le simulateur et le parcours sont tranchés par la décision 15.
