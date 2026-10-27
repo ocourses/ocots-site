@@ -8,21 +8,43 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
-### Chargement de KaTeX (ocots-site#7)
+---
 
-`chargeKatex()` dans `js/ui/katex.js` : KaTeX 0.16.11 (version inchangée)
-depuis jsDelivr, avec empreintes SRI. **Migration** : les pages du cours
-retirent leurs deux balises KaTeX (`<link>` et `<script>`) ; le démarrage des
-pages du socle (étape suivante de ocots-site#7) attend `chargeKatex()` avant
-tout rendu. Une page à soi (exemple.html d'A) l'appelle elle-même :
-`await chargeKatex()`.
+## v0.1.0 — 2026-10-27
 
-### Fichiers repris (étape 1)
+Première version du socle commun des sites de cours. Rien n'est encore adopté par un cours : chacun
+la prend par sa migration, dans cet ordre : mesure-integration-enseignants#464,
+calcul-differentiel-edo-enseignants#144, automatique-enseignants#428. Le détail de ce que fait
+chaque migration est dans les sections ci-dessous (« Migration »).
+
+### Changements visibles, par cours
+
+| | automatique (A) | calcul-differentiel-edo (C) | mesure-integration (M) |
+|---|---|---|---|
+| Ponctuation collée à une formule (`.insecable`) | nouveau | déjà | nouveau |
+| « ↺ Réinitialiser » sur les pages qui ont des réglages | nouveau | nouveau | déjà |
+| Règles CSS venues de M (titre masqué des onglets, formules du rappel resserrées, …) | nouveau | nouveau | déjà |
+| Préférences d'affichage remises aux défauts, une fois (clé `<id>.illustration.<page>`) | oui | non (même clé) | oui |
+| Nom accessible des étiquettes KaTeX sans la source LaTeX | nouveau | déjà | nouveau |
+| Graduation près du bord droit alignée au lieu d'être coupée | nouveau | nouveau | déjà |
+| Titre de l'accueil en typographie française | oui | oui | oui |
+
+### Conception et intégration (ocots-site#2, ocots-site#3)
+
+- `docs/conception.md` : forme de `site.config.js` (module JS, clés vérifiées), contrat d'un module
+  d'illustration, points d'extension, stratégie de test et décisions (1 à 15). `docs/principes.md` :
+  les principes du socle, chacun avec sa règle et ce qui la vérifie.
+- Le socle s'intègre en sous-module `site/socle/`, épinglé sur un tag. `npm test` du cours lance aussi
+  les tests du socle ; un clone sans sous-module le dit (`pretest`). La publication étudiante demande
+  `ocots-publication` ≥ v1.2.0 ; outils, documentation, exemples et workflows du socle en sont exclus
+  par leur chemin (README, « Intégrer le socle dans un cours »).
+
+### Fichiers repris (étape 1, ocots-site#4)
 
 `css/theme.css`, `js/ui/{onglets,preferences,infobulle,theme}.js`, `serve.mjs` :
 identiques dans les trois cours, aucun changement de comportement.
 
-### Fichiers fusionnés (étape 2)
+### Fichiers fusionnés (étape 2, ocots-site#5)
 
 Sens de la fusion : union des améliorations, après lecture des écarts.
 
@@ -38,7 +60,7 @@ Sens de la fusion : union des améliorations, après lecture des écarts.
 | `js/ui/canevas.js` | nouveau | `ajusteCanevas`, extrait de `Repere.prepare` et `Vue3D.prepare` qui le dupliquaient. `graduations` renvoie `[]` pour un intervalle vide ou à l'envers (elle bouclait sur `NaN`). |
 | `js/core/ode.js` | A (= C) | Aucun. |
 
-### CSS (étape « CSS »)
+### CSS (ocots-site#6)
 
 `css/style.css` : la feuille de `mesure-integration` sans sa section propre, en neuf composants
 (`base`, `entete`, `onglets`, `champs`, `petit-ecran`, `catalogue`, `illustration`, `accueil`,
@@ -50,6 +72,18 @@ formules centrées du rappel resserrées, `.zone-verdict` et `.hauteur-fixe`, `b
 espacement sous un canevas, `.entete-barre > div:first-child`. Les six règles qui divergeaient
 (`.entete-actions`, `a.bouton-lien`, `.verdict`, `.legende-courbes`, `.barre-legende`,
 `.texte-fixe`) gardent leur forme actuelle dans le `cours.css` d'A et C.
+
+### Briques de systèmes linéaires (ocots-site#17)
+
+- `js/core/dim2.js` est repris dans le socle (identique dans A et C) avec des tests
+  de caractérisation : nature et stabilité des onze cas du TD1 et leurs frontières,
+  spectres réels et complexes, matrices doubles et compagnons, exponentielle,
+  directions propres.
+- `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont extraits
+  dans le socle (identiques dans A et C), avec des tests de ce qu'ils dessinent
+  (faux repère) et des particules. Les cours gardent temporairement leurs copies :
+  leur migration, avec suppression des copies, est suivie par ocots-site#20.
+  `scripts/verifie-cours.py` remplace ces copies par une façade vers le socle.
 
 ### Configuration et parcours (ocots-site#7)
 
@@ -64,6 +98,13 @@ Ajouts : `js/config.js` (`valideConfig`, `verifieCours`), `js/catalogue.js` (`tr
 - **A** : le drapeau `simulateur: true` sort du catalogue (clé inconnue) ; ses pages d'exemples passent
   par `pagesDuTheme` dans `site.config.js`, et `app.js` appelle
   `installeNavigation(parcours(config), 'exemple', id)`.
+
+### Chargement de KaTeX (ocots-site#7)
+
+`chargeKatex()` dans `js/ui/katex.js` : KaTeX 0.16.11 (version inchangée) depuis jsDelivr, avec
+empreintes SRI ; `KATEX` (version et empreintes) est figé. Les pages du socle l'attendent avant tout
+rendu. **Migration** : les pages du cours retirent leurs deux balises KaTeX (`<link>` et `<script>`) ;
+une page à soi (`exemple.html` d'A) appelle `await chargeKatex()`.
 
 ### Pages (ocots-site#7)
 
@@ -93,7 +134,7 @@ Changements de comportement :
   schéma et la galerie sur `#theme-commande` après `await demarreAccueil(config)`) et vérifie
   seulement `['illustration.html']`.
 
-### Cours minimal et non-régression des pages (ocots-site#7)
+### Cours minimal et outils de non-régression (ocots-site#7)
 
 - `examples/minimal/` devient un vrai petit cours (configuration, modèles, deux illustrations, glossaire,
   tests `verifieCours` et `verifieModeles`), `socle/` étant un lien vers la racine du dépôt.
@@ -103,6 +144,15 @@ Changements de comportement :
   `scripts/configs/` : les `site.config.js` des trois cours, vérifiés par `verifieCours`.
 - `scripts/styles-calcules.py` : `<noscript>` (et les scripts) ne comptent plus dans le rang d'un élément.
 
+### CI, workflow Pages et versions (ocots-site#8, ocots-site#9)
+
+- CI du socle (`.github/workflows/tests.yml`) : tests (Node 22 et 24), outils (Python), cours minimal
+  dans Chrome sans interface, essai d'intégration de bout en bout, workflow Pages sans publier.
+- Workflow Pages réutilisable (`.github/workflows/site.yml`) : tests du site, puis publication sur
+  GitHub Pages ; le dépôt étudiant l'appelle par `modeles/site.yml`, épinglé par tag.
+- Versions SemVer, en `v0.x` jusqu'à la migration des trois cours (décision 14) ; un tag `vX.Y.Z`
+  crée la release, avec pour notes sa section de ce journal (`release.yml`).
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.
@@ -110,21 +160,3 @@ Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade
 - `automatique` : `simule` (RK4 sur une trajectoire, importe `core/ode.js`). `calcul-differentiel-edo` en a une copie sans appelant : à supprimer.
 - `calcul-differentiel-edo` : `champsPoint` (deux champs pour un point glissé).
 - `mesure-integration` : `choisitIndice`, `echelleLog`, `axesLog`, `choixEchelle`.
-
-### Reporté
-
-- `js/illustration.js` : relève de la configuration (#7).
-- `illustration.html` : voir la conception.
-
-### Caractérisation et briques de systèmes linéaires
-
-- `js/core/dim2.js` est repris dans le socle (identique dans A et C) avec des tests
-  de caractérisation : nature et stabilité des onze cas du TD1 et leurs frontières,
-  spectres réels et complexes, matrices doubles et compagnons, exponentielle,
-  directions propres.
-- `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont extraits
-  dans le socle (identiques dans A et C), avec des tests de ce qu'ils dessinent
-  (faux repère) et des particules. Les cours gardent temporairement leurs copies :
-  leur migration, avec suppression des copies, est suivie par ocots-site#20.
-  `scripts/verifie-cours.py` remplace ces copies par une façade vers le socle.
-- `js/core/dim2.js`, `js/illustrations/{plan-trace-det,portraits}.js` : sans test autonome (`dim2`), ou dépendants de la décision sur les briques d'illustration.
