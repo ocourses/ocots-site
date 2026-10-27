@@ -8,6 +8,9 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- Garde du sous-module : `npm run serve` dit « Socle absent » comme `npm test`, par un script `socle`
+  que `pretest` et `preserve` appellent (README, « Intégrer le socle dans un cours » ; l'essai
+  d'intégration vérifie les deux). **Migration** : à ajouter au `package.json` du cours.
 - Outils : `styles-calcules.py`, `site-apres.py` et `verifie-cours.py` copient un site sans
   suivre les liens symboliques (`scripts/sites.py`). Sur un cours migré, le lien du cours minimal
   (`socle/examples/minimal/socle`) bouclait et la copie échouait.

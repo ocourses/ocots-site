@@ -28,13 +28,21 @@ git add site/socle .gitmodules && git commit -m "feat(site): ajoute le socle oco
   `socle/css/...`. `serve.mjs` (du socle) et `node --test` (lancé dans `site/`)
   résolvent donc le socle comme le navigateur. Après un clone :
   `git submodule update --init`.
-- **Garde** : dans le `package.json` du cours, un `pretest` dit clairement que
-  le sous-module n'est pas initialisé, au lieu d'une erreur de module
-  introuvable (une CI qui clone sans `submodules:` tombe sur ce cas) :
+- **Garde** : dans le `package.json` du cours, `pretest` et `preserve` (que npm
+  lance avant `test` et `serve`) disent clairement que le sous-module n'est pas
+  initialisé, au lieu d'une erreur de module introuvable (une CI qui clone sans
+  `submodules:` tombe sur ce cas, comme un `git checkout` de branche, qui ne met
+  pas les sous-modules à jour) :
 
   ```json
-  "pretest": "test -f socle/package.json || { echo 'Socle absent : git submodule update --init' >&2; exit 1; }"
+  "socle": "test -f socle/package.json || { echo 'Socle absent : git submodule update --init' >&2; exit 1; }",
+  "pretest": "npm run -s socle",
+  "preserve": "npm run -s socle",
+  "serve": "node socle/serve.mjs"
   ```
+
+  `git config submodule.recurse true` fait suivre les sous-modules aux
+  `checkout`, `pull` et `switch`.
 
 - **Publication** : `ocots-publication` ≥ v1.2.0 copie les fichiers du
   sous-module dans le dépôt étudiant (ni `.git` ni `.gitmodules` ne sont
