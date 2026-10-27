@@ -14,6 +14,16 @@ permissions:
   contents: read
 
 jobs:
+  workflows:
+    # actionlint (et shellcheck sur les run:) : un workflow invalide échoue ici, pas au démarrage
+    # d'une release.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color
+
   socle:
     runs-on: ubuntu-latest
     strategy:

@@ -4,7 +4,11 @@
 """
 
 import importlib.machinery
+import contextlib
 import importlib.util
+import io
+import os
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -58,6 +62,32 @@ class Section(unittest.TestCase):
             "## v0.2.0-rc1 — 2026-11-01\n\n- préversion\n\n---\n\n## v0.2.0 — 2026-11-01",
         )
         self.assertEqual(notes.section(changelog, "v0.2.0"), "### Fichiers\n\n- un\n- deux")
+
+
+class Main(unittest.TestCase):
+    """Le script lancé dans un dépôt : son code de sortie selon le CHANGELOG.md du tag."""
+
+    def lance(self, changelog, version):
+        with tempfile.TemporaryDirectory() as dossier:
+            Path(dossier, "CHANGELOG.md").write_text(changelog, encoding="utf-8")
+            avant = os.getcwd()
+            os.chdir(dossier)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    return notes.main([version])
+            finally:
+                os.chdir(avant)
+
+    def test_publie_quand_non_publie_est_vide(self):
+        vide = CHANGELOG.replace("- à venir\n\n", "")
+        self.assertEqual(self.lance(vide, "v0.2.0"), 0)
+
+    def test_refuse_un_tag_qui_porte_des_changements_non_publies(self):
+        self.assertEqual(self.lance(CHANGELOG, "v0.2.0"), 1)
+
+    def test_refuse_une_version_sans_section(self):
+        vide = CHANGELOG.replace("- à venir\n\n", "")
+        self.assertEqual(self.lance(vide, "v0.3.0"), 1)
 
 
 if __name__ == "__main__":
