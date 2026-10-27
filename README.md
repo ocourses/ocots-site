@@ -167,6 +167,7 @@ propre. Voir `docs/css.md`.
 scripts/residu-css.py STYLE_DU_COURS.css --site DOSSIER_SITE > cours.css   # le reste d'un cours
 scripts/residu-css.py STYLE_DU_COURS.css --nouveautes                       # ce que le socle lui apporte
 scripts/site-apres.py DOSSIER_SITE SORTIE                                    # le cours avec le CSS du socle
+scripts/site-apres.py DOSSIER_SITE SORTIE --pages scripts/configs/COURS.config.js [--modeles illustration.html]   # et ses pages
 scripts/captures.py prendre DOSSIER_SITE SORTIE [--tailles 1504x856 390x844]   # captures avant/après
 scripts/captures.py comparer REFERENCE REFERENCE_BIS APRES
 scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 390x844 1504x600]   # le critère fiable
@@ -178,8 +179,8 @@ Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans int
 ## CI et déploiement
 
 - **CI du socle** (`.github/workflows/tests.yml`) : `npm test` (Node 22 et 24), `npm run test:outils`,
-  un cours minimal qui consomme le socle (`examples/minimal/` : ses tests, puis `scripts/fumee.py`, la page
-  ouverte dans Chrome sans interface, sans erreur de console), l'essai d'intégration
+  le cours minimal (`examples/minimal/`, ci-dessous : ses tests, puis `scripts/fumee.py`, ses pages
+  ouvertes dans Chrome sans interface, démarrées et sans erreur de console), l'essai d'intégration
   (`scripts/essai-integration.sh`, avec `ocots-publication` v1.2.0) et le workflow Pages ci-dessous, appelé sur
   l'exemple sans publier.
 - **Workflow Pages réutilisable** (`.github/workflows/site.yml`) : les tests du site (`npm test` dans son
@@ -188,7 +189,20 @@ Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans int
   l'appelle avec `modeles/site.yml`, **épinglé par tag** (`@vX.Y.Z`), en accordant `pages: write` et
   `id-token: write`. Le fichier du dépôt étudiant est publié depuis le dépôt enseignant
   (`etudiant/.github/workflows/site.yml`) : le remplacer par ce modèle fait partie de la migration d'un cours.
-- Pas encore vérifié ici : le schéma de `site.config.js` (il arrive avec ocots-site#7).
+
+### Cours minimal
+
+`examples/minimal/` est un vrai petit cours, disposé comme un cours (`docs/conception.md`, « Disposition
+d'un cours ») : `site.config.js`, les deux gabarits copiés des modèles, `css/cours.css`, deux illustrations
+et une annoncée, un glossaire, et ses tests (`verifieCours`, `verifieModeles`). `socle/` y est un lien vers
+la racine du dépôt, à la place du sous-module. C'est l'exemple à suivre pour un nouveau cours, et la
+non-régression du socle en CI.
+
+```bash
+cd examples/minimal && npm test         # le contrat du socle et les gabarits
+scripts/fumee.py                        # ses pages dans Chrome sans interface
+npm run serve                           # puis http://localhost:8000/examples/minimal/
+```
 
 ## Versions et publication
 
