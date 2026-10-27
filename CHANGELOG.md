@@ -8,6 +8,14 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+---
+
+## v0.3.0 — 2026-10-27
+
+Aucun changement visible pour un lecteur : une fonction de plus dans `js/ui/format.js`
+(`latexScientifiqueFixe`), que `WEB5` cite, et le test de largeur des fonctions « fixes ».
+Un cours qui monte de v0.2.0 à v0.3.0 ne change que le gitlink de `site/socle/`.
+
 - `latexScientifiqueFixe(v, decimales = 2)` (`js/ui/format.js`) : notation scientifique en LaTeX
   à largeur constante (`\phantom{-}1{,}23 \cdot 10^{-\phantom{0}2}`), pour une grandeur qui traverse
   plusieurs ordres de grandeur pendant un geste (WEB5). Équivalent LaTeX de `nombreScientifique` ;
