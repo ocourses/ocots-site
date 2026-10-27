@@ -158,11 +158,14 @@ export async function demarreIllustration(config) {
 
   // ---- Réinitialiser -------------------------------------------------------------
   // Remet les réglages du module à leurs valeurs par défaut (les préférences
-  // d'affichage restent), comme le fait un essai.
+  // d'affichage restent), comme le fait un essai. Le bouton n'affiche que « ↺ » :
+  // avec le libellé, trois actions faisaient passer les titres longs sur deux
+  // lignes (#26) ; son nom accessible reste « Réinitialiser ».
   const defaut = { ...module.etat };
   if (Object.keys(defaut).length > 0) {
-    const reinit = bouton('bouton-lien', '↺ Réinitialiser', () => applique(defaut));
-    reinit.title = 'Remet les réglages de la page à leurs valeurs de départ';
+    const reinit = bouton('bouton-lien', '↺', () => applique(defaut));
+    reinit.setAttribute('aria-label', 'Réinitialiser');
+    reinit.title = 'Réinitialiser : remet les réglages de la page à leurs valeurs de départ';
     document.querySelector('.entete-actions')?.prepend(reinit);
   }
 
