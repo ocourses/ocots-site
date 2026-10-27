@@ -14,6 +14,7 @@ import {
   latexNombreFixe,
   latexPositifFixe,
   latexScientifique,
+  latexScientifiqueFixe,
   latexVecteur,
   nombreCourt,
   nombreScientifique,
@@ -129,4 +130,47 @@ test('etiquettesAxe : même nombre de décimales, notation scientifique aux extr
   assert.deepEqual(etiquettesAxe([0, 0.5, 1]), ['0', '0,5', '1,0']);
   assert.deepEqual(etiquettesAxe([0, 0, 0]), ['0', '0', '0']);
   assert.ok(etiquettesAxe([0, 2e-5, 4e-5]).every((t) => t === '0' || /e|^\d/.test(t)));
+});
+
+test('latexScientifiqueFixe : signe, mantisse et exposant de largeur constante', () => {
+  assert.equal(latexScientifiqueFixe(0.0123), '\\phantom{-}1{,}23 \\cdot 10^{-\\phantom{0}2}');
+  assert.equal(latexScientifiqueFixe(-12345), '-1{,}23 \\cdot 10^{\\phantom{-}\\phantom{0}4}');
+  assert.equal(latexScientifiqueFixe(2.5e-12, 1), '\\phantom{-}2{,}5 \\cdot 10^{-12}');
+  assert.equal(latexScientifiqueFixe(0), '\\phantom{-}0{,}00 \\cdot 10^{\\phantom{-}\\phantom{0}0}');
+  // L'arrondi peut donner 10 : la mantisse repasse à 1 et l'exposant monte.
+  assert.equal(latexScientifiqueFixe(9.999e-5), '\\phantom{-}1{,}00 \\cdot 10^{-\\phantom{0}4}');
+  assert.equal(latexScientifiqueFixe(-0), '\\phantom{-}0{,}00 \\cdot 10^{\\phantom{-}\\phantom{0}0}');
+  assert.equal(latexScientifiqueFixe(Infinity), '+\\infty');
+});
+
+// Largeur : WEB5 demande qu'un nombre qui change ne change pas de largeur. Le gabarit d'une
+// sortie LaTeX remplace ce qui est réservé (\phantom{x}) par x, et les signes et chiffres par
+// des symboles de même largeur : deux sorties de même gabarit ont la même largeur.
+const gabarit = (latex) => latex.replace(/\\phantom\{([^}]*)\}/g, '$1').replace(/[0-9]/g, '0').replace(/[-−+]/g, '±');
+
+function memeLargeur(nom, valeurs, fabrique) {
+  const gabarits = new Set(valeurs.map((v) => gabarit(fabrique(v))));
+  assert.equal(gabarits.size, 1, `${nom} : ${[...gabarits].join(' | ')}`);
+}
+
+const pas = (a, b, n) => Array.from({ length: n + 1 }, (_, i) => a + ((b - a) * i) / n);
+const decades = Array.from({ length: 199 }, (_, i) => i - 99).flatMap((k) => [1, 2.5, 9.99].flatMap((m) => [m * 10 ** k, -m * 10 ** k]));
+
+test('largeur constante sur toute la plage : latexNombreFixe, latexPositifFixe', () => {
+  memeLargeur('latexNombreFixe', [...pas(-9.99, 9.99, 400), 0, -0.0001, 0.0001], (v) => latexNombreFixe(v, 2));
+  memeLargeur('latexPositifFixe', [...pas(0, 9.99, 400), 0, -3], (v) => latexPositifFixe(v, 3));
+});
+
+test('largeur constante sur toute la plage : latexScientifiqueFixe', () => {
+  memeLargeur('latexScientifiqueFixe', [...decades, 0, 9.999e-5], (v) => latexScientifiqueFixe(v, 2));
+});
+
+test('largeur constante sur toute la plage : nombreScientifique', () => {
+  const longueurs = new Set([...decades, 0, Infinity, -Infinity, NaN].map((v) => nombreScientifique(v, 2).length));
+  assert.equal(longueurs.size, 1, [...longueurs].join(' | '));
+});
+
+test('le test de largeur voit une largeur qui change (garde du test lui-même)', () => {
+  assert.throws(() => memeLargeur('latexNombre', pas(-9.99, 9.99, 100), (v) => latexNombre(v, 3)));
+  assert.throws(() => memeLargeur('latexScientifique', [1e-5, 1e-2], (v) => latexScientifique(v, 3)));
 });

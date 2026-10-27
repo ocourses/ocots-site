@@ -8,6 +8,16 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- `latexScientifiqueFixe(v, decimales = 2)` (`js/ui/format.js`) : notation scientifique en LaTeX
+  à largeur constante (`\phantom{-}1{,}23 \cdot 10^{-\phantom{0}2}`), pour une grandeur qui traverse
+  plusieurs ordres de grandeur pendant un geste (WEB5). Équivalent LaTeX de `nombreScientifique` ;
+  `latexScientifique` change de forme au seuil 10⁻³ et donc de largeur. Exposant à deux chiffres
+  (|exposant| < 100), nombre non fini sans largeur constante.
+- Test de largeur (`tests/format.test.js`) : sur toute leur plage, `latexNombreFixe`,
+  `latexPositifFixe`, `latexScientifiqueFixe` et `nombreScientifique` rendent la même largeur
+  (le gabarit d'une sortie remplace `\phantom{x}` par `x`, les chiffres et signes par des symboles
+  de même largeur). Le test vérifie aussi qu'il voit une largeur qui change (`latexNombre`,
+  `latexScientifique`). C'est ce qui rend WEB5 vérifiable (#32).
 
 ---
 

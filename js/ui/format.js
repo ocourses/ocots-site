@@ -116,6 +116,25 @@ export function nombreScientifique(v, decimales = 2) {
   return `${signe}${mantisse.replace('.', ',')}e${e < 0 ? '−' : '+'}${String(Math.abs(e)).padStart(2, '0')}`;
 }
 
+// Nombre en notation scientifique de largeur constante, en LaTeX : comme
+// nombreScientifique, pour une formule (`1{,}23 \cdot 10^{-02}`). La place du signe
+// de la mantisse et de l'exposant est toujours réservée (\phantom{-}), la mantisse
+// a `decimales` décimales et l'exposant deux chiffres (|exposant| < 100). Pour une
+// grandeur qui traverse plusieurs ordres de grandeur pendant un geste (une erreur
+// qui tend vers 0) : latexScientifique change de forme au seuil 10⁻³ et de largeur
+// avec elle. Un nombre non fini n'a pas de largeur constante (comme latexScientifique).
+export function latexScientifiqueFixe(v, decimales = 2) {
+  if (!Number.isFinite(v)) return v > 0 ? '+\\infty' : v < 0 ? '-\\infty' : '\\text{—}';
+  const [mantisse, exposant] = Math.abs(v).toExponential(decimales).split('e');
+  const nul = Number(mantisse) === 0;
+  const e = nul ? 0 : Number(exposant);
+  const chiffres = String(Math.abs(e));
+  const manque = '\\phantom{0}'.repeat(Math.max(0, 2 - chiffres.length));
+  const signe = v < 0 && !nul ? '-' : '\\phantom{-}';
+  const signeExposant = e < 0 ? '-' : '\\phantom{-}';
+  return `${signe}${mantisse.replace('.', '{,}')} \\cdot 10^{${signeExposant}${manque}${chiffres}}`;
+}
+
 // Étiquettes d'un axe de graduations régulières : même nombre de décimales
 // pour toutes, et l'ordre de grandeur en notation scientifique (5e-3) quand les
 // valeurs sont très petites ou très grandes, pour ne jamais lire « 0 » partout.
