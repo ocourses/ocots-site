@@ -93,7 +93,7 @@ function fautesValeurs(valeurs, defaut, choix, ou) {
 }
 
 // Fautes du module (export par défaut) de l'illustration `id`.
-export function fautesModule(id, module, glossaire) {
+function fautesModule(id, module, glossaire) {
   const ou = `illustration ${id}`;
   if (!objet(module)) return [`${ou} : le module doit exporter par défaut un objet`];
   const fautes = inconnues(module, CLES.module, ou);
