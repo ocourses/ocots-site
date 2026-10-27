@@ -45,7 +45,9 @@ class Page(unittest.TestCase):
     def test_une_page_vide_echoue(self):
         defauts = self.defauts("<!doctype html><body></body>")
         self.assertTrue(any("data-ok" in d for d in defauts))
-        self.assertTrue(any("KaTeX" in d for d in defauts))
+
+    def test_une_page_demarree_sans_erreur_passe(self):
+        self.assertEqual(self.defauts('<!doctype html><body><script>document.body.dataset.ok = "1"</script></body>'), [])
 
     def test_une_erreur_de_script_est_rapportee(self):
         defauts = self.defauts("<!doctype html><body><script>null.boom</script></body>")

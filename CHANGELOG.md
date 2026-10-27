@@ -92,6 +92,16 @@ Changements de comportement :
   schéma et la galerie sur `#theme-commande` après `await demarreAccueil(config)`) et vérifie
   seulement `['illustration.html']`.
 
+### Cours minimal et non-régression des pages (ocots-site#7)
+
+- `examples/minimal/` devient un vrai petit cours (configuration, modèles, deux illustrations, glossaire,
+  tests `verifieCours` et `verifieModeles`), `socle/` étant un lien vers la racine du dépôt.
+- `scripts/fumee.py` : `--racine` ; une page passe si elle a démarré (`data-ok="1"`, posé par les pages
+  du socle une fois KaTeX chargé) sans erreur de console. Par défaut : les pages du cours minimal.
+- `scripts/site-apres.py --pages CONFIG [--modeles …]` : le site « après » avec les pages du socle ;
+  `scripts/configs/` : les `site.config.js` des trois cours, vérifiés par `verifieCours`.
+- `scripts/styles-calcules.py` : `<noscript>` (et les scripts) ne comptent plus dans le rang d'un élément.
+
 ### Restent dans le cours (un seul usage)
 
 Ils vivent dans le `js/illustrations/commun.js` **du cours**, devenu une façade (`export * from '../briques/commun.js'` suivi du code propre) : les modules d'illustration gardent `import … from './commun.js'`. `scripts/propre-aux-cours.json` liste ce code, et `scripts/verifie-cours.py` génère cette façade.

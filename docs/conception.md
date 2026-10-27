@@ -275,13 +275,18 @@ cours lui passe.
 | Contrat | `verifieCours(config)` : configuration et chaque module d'illustration. | appelé par chaque cours |
 | Contrat JS ↔ CSS | Toute variable lue par `theme.js` et toute classe posée par le JS du socle existe dans le CSS du socle. | `tests/` du socle |
 | Non-régression entre cours | Les tests de chaque cours passent avec les fichiers du socle ; le script échoue sinon. | `scripts/verifie-cours.py` (ocots-site#5) |
-| Bout en bout | Chaque page d'illustration s'ouvre sans erreur de console (Chrome sans interface) ; captures avant/après pour le rendu. | script, à la migration de chaque cours |
+| Bout en bout | Les pages du cours minimal démarrent sans erreur de console (Chrome sans interface). | `scripts/fumee.py`, en CI |
+| Non-régression des pages | Pour chaque cours, un site « après » (modèles, `site.config.js` de `scripts/configs/`, JS et CSS du socle) a les mêmes éléments et styles calculés que l'existant, aux trois tailles ; le parcours du socle est celui du cours. | `scripts/site-apres.py --pages`, `scripts/styles-calcules.py`, avant chaque migration |
 
 Les doublures sont écrites à la main, sans `jsdom` ni `linkedom`, tant qu'elles
 restent petites : une dépendance npm obligerait le dépôt étudiant à faire
 `npm ci` avant `npm test`.
 
 ## Exemples
+
+Les configurations complètes des trois cours sont dans `scripts/configs/` :
+`site-apres.py --pages` les vérifie et les pose, et chaque cours la reprendra à
+sa migration. Celle de mesure-integration :
 
 ```js
 // mesure-integration
@@ -309,8 +314,8 @@ différentielles ordinaires — parcours ModIA, INP-ENSEEIHT et INSA Toulouse'`,
 
 `automatique` : `id: 'automatique'`, `titre: 'Automatique'`, `sousTitre:
 'Automatique, première année — ENSEEIHT, Sciences du numérique'`,
-`depotIssues: 'ocourses/automatique'`. Le simulateur reste dans le cours
-jusqu'à la décision de ocourses/ocots-site#7.
+`depotIssues: 'ocourses/automatique'`, et `pagesDuTheme` pour les exemples du
+simulateur après le thème « Commande » (décision 15).
 
 ## Décisions
 

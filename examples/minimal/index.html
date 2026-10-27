@@ -3,17 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Exemple minimal : un cours qui consomme le socle</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-    <link rel="stylesheet" href="../../css/theme.css" />
-    <link rel="stylesheet" href="../../css/style.css" />
-    <!-- TODO ocots-site#7 : remplacer ces balises par le chargeur KaTeX du socle. -->
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script type="module" src="main.js"></script>
+    <title>Explorer le cours</title>
+    <link rel="stylesheet" href="socle/css/theme.css" />
+    <link rel="stylesheet" href="socle/css/style.css" />
+    <link rel="stylesheet" href="css/cours.css" />
+    <script type="module">
+      import config from './site.config.js';
+      import { demarreAccueil } from './socle/js/accueil.js';
+      demarreAccueil(config);
+    </script>
   </head>
   <body>
-    <noscript>Cette page demande JavaScript.</noscript>
-    <header class="entete"><h1>Exemple minimal</h1></header>
-    <div id="page"></div>
+    <!-- Modèle du socle (ocots-site/modeles/index.html), à copier sans le changer :
+         titres, introduction et catalogue viennent de site.config.js. -->
+    <header class="entete">
+      <h1 id="titre"></h1>
+      <p id="sous-titre" class="source"></p>
+    </header>
+    <noscript>
+      <p class="intro">Cette page demande JavaScript.</p>
+    </noscript>
+
+    <p id="signalement" class="intro signalement">
+      Une erreur, un bug, une remarque ou une idée ? Ouvrez une
+      <a id="issues" href="https://github.com/ocourses" target="_blank" rel="noopener">issue sur GitHub</a>
+      en décrivant la page, ce que vous avez fait et ce que vous attendiez.
+    </p>
+
+    <div id="themes" class="themes"></div>
   </body>
 </html>
