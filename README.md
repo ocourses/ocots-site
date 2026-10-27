@@ -176,6 +176,29 @@ scripts/styles-calcules.py SITE_AVANT SITE_APRES [PAGE ...] [--tailles 1504x856 
 Les scripts de vérification partagent `scripts/navigateur.py` : Chrome sans interface (variable `CHROME`, sinon
 `google-chrome`, `chromium`, puis le chemin de macOS) et `serve.mjs` du socle, sur un port libre et sans cache.
 
+## Briques de systèmes linéaires
+
+`js/core/dim2.js`, `js/briques/plan-trace-det.js` et `js/briques/portraits.js` sont
+partagés par `automatique` et `calcul-differentiel-edo`. Leurs tests de caractérisation
+(décision 13) figent ce qu'ils rendent avant la migration des cours : nature et stabilité
+des onze cas du TD1 et leurs frontières, spectres, exponentielle, directions propres, et
+ce que dessinent le plan et les portraits, relevé par un faux repère
+(`tests/aides/faux-repere.js`).
+
+La dépendance de migration est explicite :
+
+```text
+dim2 + tests
+    -> plan-trace-det + portraits dans js/briques/
+    -> migration de calcul-differentiel-edo-enseignants#144
+    -> migration d'automatique-enseignants#428
+```
+
+Les cours en gardent une copie jusqu'à leur migration (ocots-site#20), qui la remplace
+par un import du socle. D'ici là, `scripts/verifie-cours.py` remplace ces copies par une
+façade vers le socle (`export * from '../briques/…'`) : les tests des cours exécutent
+déjà le code du socle.
+
 ## CI et déploiement
 
 - **CI du socle** (`.github/workflows/tests.yml`) : `npm test` (Node 22 et 24), `npm run test:outils`,
