@@ -88,3 +88,20 @@ test('Vue3D.pointDuPlan : l’inverse de projette à hauteur fixée ; null si la
   vue.camera.elevation = 0;
   assert.equal(vue.pointDuPlan(10, 10, 0), null);
 });
+
+test('Repere.axes : `enL` trace les axes à gauche et en bas, sinon en x = 0 et y = 0', () => {
+  const [r1, r2] = [0, 1].map(() => {
+    const canevas = fauxCanevas({ largeur: 400, hauteur: 300 });
+    const r = new Repere(canevas, { x: [-3, -1], y: [-5, 2] });
+    assert.ok(r.prepare());
+    return r;
+  });
+  r1.axes();
+  r2.axes({ enL: true });
+  // Les deux derniers `moveTo` sont les débuts de l'axe horizontal et de l'axe vertical.
+  const debuts = (r) => r.ctx.appels.filter((a) => a.nom === 'moveTo').slice(-2).map((a) => a.args);
+  const [[, yH1], [xV1]] = debuts(r1);
+  const [[, yH2], [xV2]] = debuts(r2);
+  assert.ok(Math.abs(yH1 - r1.Y(0)) < 1e-9 && Math.abs(xV1 - r1.X(-1)) < 1e-9, 'par défaut : y = 0 et le bord droit');
+  assert.ok(Math.abs(yH2 - r2.Y(-5)) < 1e-9 && Math.abs(xV2 - r2.X(-3)) < 1e-9, 'enL : le bas et la gauche');
+});

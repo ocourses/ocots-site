@@ -8,6 +8,14 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- `Repere.axes({ enL: true })` : les axes sont tracés à gauche et en bas du cadre, du côté de
+  leurs graduations, et non en `x = 0` et `y = 0`. Pour une figure où 0 n'a pas de sens
+  particulier (erreur en log-log) ou que la fenêtre ne contient pas : les axes en 0 tombaient
+  en haut ou à droite, loin des graduations. Par défaut, rien ne change.
+- Boutons ▲ ▼ (`champ`, `ajoutePas`) : la répétition au maintien s'arrête quand le bouton
+  quitte la page. Une page qui reconstruit la boîte à chaque changement (tableau de Butcher)
+  retirait le bouton tenu, qui ne recevait plus « pointerup » : la valeur variait sans fin.
+
 ---
 
 ## v0.4.0 — 2026-10-28

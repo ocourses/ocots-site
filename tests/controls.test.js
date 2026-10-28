@@ -128,3 +128,19 @@ test('champ : le nom accessible est le texte MathML, sans la source LaTeX répé
   assert.equal(saisie.getAttribute('aria-label'), 't0');
   assert.equal(curseur.getAttribute('aria-label'), 't0');
 });
+
+test('boutons ▲ ▼ : la répétition s’arrête quand le bouton quitte la page', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const saisie = saisieA('0');
+  document.body.appendChild(saisie.parentNode);
+  const boite = ajoutePas(saisie, { pas: 1, min: -100, max: 100 });
+  const monter = boite.querySelectorAll('button')[0];
+  monter.dispatchEvent(evenement('pointerdown', { button: 0 }));
+  assert.equal(saisie.value, '1');
+  t.mock.timers.tick(450);
+  t.mock.timers.tick(80);
+  assert.equal(saisie.value, '3', 'maintenu : le pas se répète');
+  boite.replaceWith(); // la boîte, et ses boutons, quittent la page
+  for (let k = 0; k < 20; k++) t.mock.timers.tick(100);
+  assert.equal(saisie.value, '3', 'retiré de la page : plus de répétition');
+});

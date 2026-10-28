@@ -43,6 +43,9 @@ function boutonsPas(nom, decale) {
     let minuteur = null;
     const repete = (delai) => {
       minuteur = setTimeout(() => {
+        // Un bouton retiré de la page (la boîte reconstruite par un changement) ne
+        // reçoit plus « pointerup » : sans cette garde, la répétition ne s'arrêterait jamais.
+        if (!b.isConnected) return;
         decale(sens);
         repete(80);
       }, delai);

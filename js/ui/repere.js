@@ -135,10 +135,14 @@ export class Repere {
   // axe est au bord du cadre, où son nom tomberait sur les courbes.
   // `ordonnees: false` : seul l'axe des abscisses est tracé et gradué (une
   // figure dont la hauteur ne porte pas de valeur, comme une droite réelle).
+  // `enL: true` : les axes sont tracés à gauche et en bas du cadre, du côté de leurs
+  // graduations, et non en x = 0 et y = 0 : pour une figure où 0 n'a pas de sens
+  // particulier (erreur en log-log, fenêtre qui ne contient pas l'origine), où les
+  // axes en 0 tomberaient en haut ou à droite, loin des graduations.
   // `dans` : { x: [a, b], y: [c, d] }, les axes et graduations restent dans ce
   // rectangle, plus petit que le cadre (un cadre élargi par `egal`) ; les
   // graduations de x vont alors juste sous l'axe, et non au bas du canevas.
-  axes({ noms = ['', ''], grille = true, nomsAuBord = false, ordonnees = true, dans = null } = {}) {
+  axes({ noms = ['', ''], grille = true, nomsAuBord = false, ordonnees = true, dans = null, enL = false } = {}) {
     const ctx = this.ctx;
     const col = this.col;
     const { x: [a, b], y: [c, d] } = dans ?? this.cadre;
@@ -161,8 +165,8 @@ export class Repere {
       }
       ctx.stroke();
     }
-    const x0 = Math.min(Math.max(0, a), b);
-    const y0 = Math.min(Math.max(0, c), d);
+    const x0 = enL ? a : Math.min(Math.max(0, a), b);
+    const y0 = enL ? c : Math.min(Math.max(0, c), d);
     ctx.strokeStyle = col.discret;
     ctx.beginPath();
     ctx.moveTo(gauche, this.Y(y0));
