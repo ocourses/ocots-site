@@ -8,6 +8,13 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+---
+
+## v0.5.0 — 2026-10-28
+
+Ajouts et correctif sans changement par défaut : un cours qui monte de v0.4.0 à v0.5.0 ne change
+que le gitlink de `site/socle/`.
+
 - `Repere.axes({ enL: true })` : les axes sont tracés à gauche et en bas du cadre, du côté de
   leurs graduations, et non en `x = 0` et `y = 0`. Pour une figure où 0 n'a pas de sens
   particulier (erreur en log-log) ou que la fenêtre ne contient pas : les axes en 0 tombaient
