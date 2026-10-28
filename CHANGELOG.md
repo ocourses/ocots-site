@@ -8,9 +8,13 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+---
+
+## v0.4.0 — 2026-10-28
+
 Gestes « bouton gauche pour l'objet, bouton droit pour la vue », jusqu'ici recopiés dans
 chaque cours (Fubini dans M, Taylor et différences finies dans C). Ajouts seulement : un cours
-qui monte ne change que le gitlink de `site/socle/`.
+qui monte de v0.3.1 à v0.4.0 ne change que le gitlink de `site/socle/`.
 
 - `boutonVue(ev)` (briques) : le geste de la vue, bouton droit ou Maj + gauche.
 - `glisse` : `prend(x, y, ev)` reçoit aussi l'événement, pour filtrer le bouton.
