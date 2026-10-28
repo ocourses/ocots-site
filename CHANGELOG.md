@@ -8,6 +8,12 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+- `latexScientifiqueFixe` : l'exposant s'écrit sans trou (`10^{-2}`, `10^{4}`) ; la place de son
+  signe et de son second chiffre est réservée **après** lui (`10^{-2\phantom{0}}`), et non plus
+  entre le « − » et le chiffre, où elle se voyait (« 10⁻ ²»). Même largeur qu'avant.
+- Test de largeur : le gabarit compare les symboles de chaque niveau (ligne, exposant) sans
+  tenir compte de leur ordre, puisque la largeur en est la somme.
+
 ---
 
 ## v0.3.0 — 2026-10-27
