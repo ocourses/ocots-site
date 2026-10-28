@@ -3,7 +3,8 @@
 // peintre), courbes et points 3D, rotation à la souris.
 //
 // Le domaine [x0, x1] × [y0, y1] × [zmin, zmax] est ramené à un cube de côté 2 ;
-// l'azimut tourne autour de l'axe vertical et l'élévation incline la vue.
+// l'azimut tourne autour de l'axe vertical et l'élévation incline la vue ;
+// `tourne(ev)` dit quels appuis font tourner (voir `Camera.attache`).
 // Plusieurs surfaces se dessinent ensemble (`surfaces`) : leurs facettes sont
 // triées toutes ensemble, pour qu'une surface passe devant l'autre là où il faut.
 
@@ -16,12 +17,12 @@ function verifieDomaine(zmax, zmin) {
 }
 
 export class Vue3D {
-  constructor(canvas, { x, y, zmax, zmin = 0, azimut = -0.7, elevation = 0.5, rappel = () => {} }) {
+  constructor(canvas, { x, y, zmax, zmin = 0, azimut = -0.7, elevation = 0.5, rappel = () => {}, tourne }) {
     verifieDomaine(zmax, zmin);
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.domaine = { x, y, zmax, zmin };
-    this.camera = new Camera({ azimut, elevation, elevations: [0.05, 1.5] }).attache(canvas, rappel);
+    this.camera = new Camera({ azimut, elevation, elevations: [0.05, 1.5] }).attache(canvas, rappel, { tourne });
   }
 
   fixeDomaine(x, y, zmax, zmin = 0) {
@@ -46,6 +47,21 @@ export class Vue3D {
     const w = (1.2 * (Math.max(zmin, Math.min(z, zmax)) - zmin)) / (zmax - zmin) - 0.6;
     const { X, H, prof } = this.camera.tourne(u, v, w);
     return { px: this.rect.width / 2 + this.echelle * X, py: this.rect.height / 2 - this.echelle * H, prof };
+  }
+
+  // Point [x, y] du plan horizontal de hauteur z vu au pixel (px, py) : l'inverse
+  // de `projette` à z fixé, pour saisir un point de la surface au bouton gauche.
+  // Rend null si la vue est rasante.
+  pointDuPlan(px, py, z) {
+    const { x: [x0, x1], y: [y0, y1], zmax, zmin } = this.domaine;
+    const { azimut, elevation } = this.camera;
+    const [ca, sa, ce, se] = [Math.cos(azimut), Math.sin(azimut), Math.cos(elevation), Math.sin(elevation)];
+    if (Math.abs(se) < 0.08) return null;
+    const w = (1.2 * (Math.max(zmin, Math.min(z, zmax)) - zmin)) / (zmax - zmin) - 0.6;
+    const X = (px - this.rect.width / 2) / this.echelle;
+    const Y = ((this.rect.height / 2 - py) / this.echelle - w * ce) / se;
+    const [u, v] = [X * ca + Y * sa, -X * sa + Y * ca];
+    return [x0 + ((u + 1) * (x1 - x0)) / 2, y0 + ((v + 1) * (y1 - y0)) / 2];
   }
 
   // Facettes de la surface z = f(x, y) sur le domaine, ou sur `pave`

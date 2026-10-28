@@ -11,11 +11,14 @@ export class Camera {
     this.elevations = elevations;
   }
 
-  // Branche la rotation à la souris sur `canvas` ; `rappel()` après chaque mouvement.
-  attache(canvas, rappel = () => {}) {
+  // Branche la rotation à la souris sur `canvas` ; `rappel()` après chaque
+  // mouvement. `tourne(ev)` dit si un appui fait tourner : par défaut tous ;
+  // `boutonVue` (briques) laisse le bouton gauche à l'objet étudié.
+  attache(canvas, rappel = () => {}, { tourne = () => true } = {}) {
     canvas.classList.add('saisissable');
     let prise = null;
     canvas.addEventListener('pointerdown', (ev) => {
+      if (!tourne(ev)) return;
       prise = { x: ev.clientX, y: ev.clientY, az: this.azimut, el: this.elevation };
       canvas.setPointerCapture(ev.pointerId);
     });
@@ -28,6 +31,8 @@ export class Camera {
     const fin = () => (prise = null);
     canvas.addEventListener('pointerup', fin);
     canvas.addEventListener('pointercancel', fin);
+    // Le bouton droit tourne : pas de menu contextuel.
+    canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
     return this;
   }
 

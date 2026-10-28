@@ -8,6 +8,20 @@ Un cours **épingle une version** de ce dépôt (sous-module `site/socle/`).
 
 ## Non publié
 
+Gestes « bouton gauche pour l'objet, bouton droit pour la vue », jusqu'ici recopiés dans
+chaque cours (Fubini dans M, Taylor et différences finies dans C). Ajouts seulement : un cours
+qui monte ne change que le gitlink de `site/socle/`.
+
+- `boutonVue(ev)` (briques) : le geste de la vue, bouton droit ou Maj + gauche.
+- `glisse` : `prend(x, y, ev)` reçoit aussi l'événement, pour filtrer le bouton.
+- `zoomable({ deplacer: 'droit' })` : seul `boutonVue` déplace la vue, le bouton gauche reste
+  à la figure ; aide « clic droit : déplacer », pas de menu contextuel.
+- `Camera.attache(canvas, rappel, { tourne })` et `new Vue3D(…, { tourne })` : `tourne(ev)`
+  dit quels appuis font tourner (tous par défaut, `boutonVue` pour laisser le gauche à
+  l'objet) ; le menu contextuel est bloqué sur une vue 3D.
+- `Vue3D.pointDuPlan(px, py, z)` : le point du plan de hauteur `z` sous le pixel, inverse de
+  `projette` ; sert à déplacer au bouton gauche un point de la surface.
+
 ---
 
 ## v0.3.1 — 2026-10-28

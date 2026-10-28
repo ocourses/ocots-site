@@ -1,12 +1,17 @@
 // Interaction à la souris sur un canevas : saisir un objet, zoomer, déplacer la vue.
 
-// Rend un objet saisissable à la souris sur un repère : `prend(x, y)` dit si
-// le point visé saisit l'objet, `deplace(x, y)` est appelé pendant le geste.
+// Geste de la vue (déplacer, tourner) sur une figure où le bouton gauche saisit
+// un objet : bouton droit, ou Maj + gauche (pavé tactile, souris à un bouton).
+export const boutonVue = (ev) => ev.button === 2 || ev.shiftKey;
+
+// Rend un objet saisissable à la souris sur un repère : `prend(x, y, ev)` dit si
+// le point visé (et le bouton, `ev`) saisit l'objet, `deplace(x, y)` est appelé
+// pendant le geste.
 export function glisse(canvas, repere, { prend = () => true, deplace, relache = () => {} }) {
   let actif = false;
   canvas.addEventListener('pointerdown', (ev) => {
     const [x, y] = repere.versMonde(ev);
-    if (!prend(x, y)) return;
+    if (!prend(x, y, ev)) return;
     actif = true;
     canvas.setPointerCapture(ev.pointerId);
     deplace(x, y);
@@ -41,7 +46,9 @@ export function borneTemps([a, b], tempsPositif) {
 }
 
 // Zoom d'une figure : molette autour du curseur, boutons +, − et ↺ ajoutés à
-// `barre`, et, si `deplacer`, glisser pour déplacer la vue. Tant qu'on n'a pas
+// `barre`, et, si `deplacer`, glisser pour déplacer la vue ; avec
+// `deplacer: 'droit'`, seul le geste de la vue (`boutonVue`) la déplace, et le
+// bouton gauche reste à la figure (régler une grandeur). Tant qu'on n'a pas
 // zoomé, le cadre suit `auto()`. Avec `tempsPositif`, l'abscisse reste ≥ 0.
 // Renvoie { cadre(), reinitialise() } : le cadre à donner au repère avant de
 // dessiner, et le retour au cadre automatique.
@@ -56,7 +63,7 @@ export function zoomable(canvas, rep, { barre, auto, redessine, deplacer = true,
   const outilsZoom = document.createElement('div');
   outilsZoom.className = 'zoom';
   outilsZoom.innerHTML =
-    `<span class="petit">molette : zoom${deplacer ? ', glisser : déplacer' : ''}</span>` +
+    `<span class="petit">molette : zoom${deplacer === 'droit' ? ', clic droit : déplacer' : deplacer ? ', glisser : déplacer' : ''}</span>` +
     '<button type="button" data-zoom="avant" aria-label="Zoomer" title="Zoomer">+</button>' +
     '<button type="button" data-zoom="arriere" aria-label="Dézoomer" title="Dézoomer">−</button>' +
     '<button type="button" data-zoom="reinit" aria-label="Réinitialiser le zoom" title="Réinitialiser le zoom">↺</button>';
@@ -84,7 +91,8 @@ export function zoomable(canvas, rep, { barre, auto, redessine, deplacer = true,
     canvas.classList.add('saisissable');
     let prise = null;
     glisse(canvas, rep, {
-      prend: (x, y) => {
+      prend: (x, y, ev) => {
+        if (deplacer === 'droit' && !boutonVue(ev)) return false;
         prise = [x, y];
         return true;
       },
@@ -95,6 +103,7 @@ export function zoomable(canvas, rep, { barre, auto, redessine, deplacer = true,
         redessine();
       },
     });
+    if (deplacer === 'droit') canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
   }
   // `reinitialise()` revient au cadre automatique (quand celui-ci change de nature).
   return { cadre, reinitialise: () => (vue = null) };
