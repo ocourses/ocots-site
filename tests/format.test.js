@@ -135,13 +135,14 @@ test('etiquettesAxe : même nombre de décimales, notation scientifique aux extr
 });
 
 test('latexScientifiqueFixe : signe, mantisse et exposant de largeur constante', () => {
-  assert.equal(latexScientifiqueFixe(0.0123), '\\phantom{-}1{,}23 \\cdot 10^{-\\phantom{0}2}');
-  assert.equal(latexScientifiqueFixe(-12345), '-1{,}23 \\cdot 10^{\\phantom{-}\\phantom{0}4}');
+  assert.equal(latexScientifiqueFixe(0.0123), '\\phantom{-}1{,}23 \\cdot 10^{-2\\phantom{0}}');
+  assert.equal(latexScientifiqueFixe(-12345), '-1{,}23 \\cdot 10^{4\\phantom{-0}}');
   assert.equal(latexScientifiqueFixe(2.5e-12, 1), '\\phantom{-}2{,}5 \\cdot 10^{-12}');
-  assert.equal(latexScientifiqueFixe(0), '\\phantom{-}0{,}00 \\cdot 10^{\\phantom{-}\\phantom{0}0}');
+  assert.equal(latexScientifiqueFixe(1e15), '\\phantom{-}1{,}00 \\cdot 10^{15\\phantom{-}}');
+  assert.equal(latexScientifiqueFixe(0), '\\phantom{-}0{,}00 \\cdot 10^{0\\phantom{-0}}');
   // L'arrondi peut donner 10 : la mantisse repasse à 1 et l'exposant monte.
-  assert.equal(latexScientifiqueFixe(9.999e-5), '\\phantom{-}1{,}00 \\cdot 10^{-\\phantom{0}4}');
-  assert.equal(latexScientifiqueFixe(-0), '\\phantom{-}0{,}00 \\cdot 10^{\\phantom{-}\\phantom{0}0}');
+  assert.equal(latexScientifiqueFixe(9.999e-5), '\\phantom{-}1{,}00 \\cdot 10^{-4\\phantom{0}}');
+  assert.equal(latexScientifiqueFixe(-0), '\\phantom{-}0{,}00 \\cdot 10^{0\\phantom{-0}}');
   assert.equal(latexScientifiqueFixe(Infinity), '+\\infty');
 });
 
@@ -160,8 +161,15 @@ test('latexMatriceFixe : les coefficients prennent la largeur du plus grand', ()
 
 // Largeur : WEB5 demande qu'un nombre qui change ne change pas de largeur. Le gabarit d'une
 // sortie LaTeX remplace ce qui est réservé (\phantom{x}) par x, et les signes et chiffres par
-// des symboles de même largeur : deux sorties de même gabarit ont la même largeur.
-const gabarit = (latex) => latex.replace(/\\phantom\{([^}]*)\}/g, '$1').replace(/[0-9]/g, '0').replace(/[-−+]/g, '±');
+// des symboles de même largeur. La largeur est la somme de celles des symboles, dans chaque
+// niveau (ligne, exposant) : on compare les symboles triés de chaque niveau, l'ordre ne compte pas.
+const symboles = (s) => [...s].sort().join('');
+const gabarit = (latex) => {
+  const g = latex.replace(/\\phantom\{([^}]*)\}/g, '$1').replace(/[0-9]/g, '0').replace(/[-−+]/g, '±');
+  const exposants = [];
+  const ligne = g.replace(/\^\{([^}]*)\}/g, (_, x) => (exposants.push(symboles(x)), '^'));
+  return [ligne, ...exposants].join(' | ');
+};
 
 function memeLargeur(nom, valeurs, fabrique) {
   const gabarits = new Set(valeurs.map((v) => gabarit(fabrique(v))));
