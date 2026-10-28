@@ -19,6 +19,8 @@ qui monte ne change que le gitlink de `site/socle/`.
 - `Camera.attache(canvas, rappel, { tourne })` et `new Vue3D(…, { tourne })` : `tourne(ev)`
   dit quels appuis font tourner (tous par défaut, `boutonVue` pour laisser le gauche à
   l'objet) ; le menu contextuel est bloqué sur une vue 3D.
+- `Vue3D.pointDuPlan(px, py, z)` : le point du plan de hauteur `z` sous le pixel, inverse de
+  `projette` ; sert à déplacer au bouton gauche un point de la surface.
 
 ---
 

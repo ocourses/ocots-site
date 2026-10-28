@@ -12,6 +12,7 @@ installeStyleCalcule();
 const { boutonVue, glisse, zoomable } = await import('../js/briques/interaction.js');
 const { Repere } = await import('../js/ui/repere.js');
 const { Camera } = await import('../js/ui/camera3d.js');
+const { Vue3D } = await import('../js/ui/vue3d.js');
 
 const GAUCHE = { button: 0, shiftKey: false };
 const DROIT = { button: 2, shiftKey: false };
@@ -74,4 +75,16 @@ test('Camera.attache, tourne: boutonVue : le bouton gauche ne fait pas tourner',
   assert.equal(c.azimut, 0);
   appui(canevas, DROIT, [0, 0], [100, 0]);
   assert.ok(Math.abs(c.azimut - 1) < 1e-12);
+});
+
+test('Vue3D.pointDuPlan : l’inverse de projette à hauteur fixée ; null si la vue est rasante', () => {
+  const vue = new Vue3D(fauxCanevas({ largeur: 340, hauteur: 300 }), { x: [-1, 2], y: [0, 3], zmin: -1, zmax: 2, azimut: 0.7, elevation: 0.6 });
+  assert.ok(vue.prepare());
+  for (const [x, y, z] of [[0, 1, 0.5], [1.7, 0.2, -1], [-0.5, 2.9, 2]]) {
+    const { px, py } = vue.projette(x, y, z);
+    const [rx, ry] = vue.pointDuPlan(px, py, z);
+    assert.ok(Math.abs(rx - x) < 1e-9 && Math.abs(ry - y) < 1e-9, `${rx}, ${ry}`);
+  }
+  vue.camera.elevation = 0;
+  assert.equal(vue.pointDuPlan(10, 10, 0), null);
 });

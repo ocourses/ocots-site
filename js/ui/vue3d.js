@@ -49,6 +49,21 @@ export class Vue3D {
     return { px: this.rect.width / 2 + this.echelle * X, py: this.rect.height / 2 - this.echelle * H, prof };
   }
 
+  // Point [x, y] du plan horizontal de hauteur z vu au pixel (px, py) : l'inverse
+  // de `projette` à z fixé, pour saisir un point de la surface au bouton gauche.
+  // Rend null si la vue est rasante.
+  pointDuPlan(px, py, z) {
+    const { x: [x0, x1], y: [y0, y1], zmax, zmin } = this.domaine;
+    const { azimut, elevation } = this.camera;
+    const [ca, sa, ce, se] = [Math.cos(azimut), Math.sin(azimut), Math.cos(elevation), Math.sin(elevation)];
+    if (Math.abs(se) < 0.08) return null;
+    const w = (1.2 * (Math.max(zmin, Math.min(z, zmax)) - zmin)) / (zmax - zmin) - 0.6;
+    const X = (px - this.rect.width / 2) / this.echelle;
+    const Y = ((this.rect.height / 2 - py) / this.echelle - w * ce) / se;
+    const [u, v] = [X * ca + Y * sa, -X * sa + Y * ca];
+    return [x0 + ((u + 1) * (x1 - x0)) / 2, y0 + ((v + 1) * (y1 - y0)) / 2];
+  }
+
   // Facettes de la surface z = f(x, y) sur le domaine, ou sur `pave`
   // ([x0, x1], [y0, y1]) ; `n` facettes par côté.
   facettes(f, { n = 34, pave = null, teinte = 215, alpha = 0.85 } = {}) {
