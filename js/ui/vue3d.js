@@ -3,7 +3,8 @@
 // peintre), courbes et points 3D, rotation à la souris.
 //
 // Le domaine [x0, x1] × [y0, y1] × [zmin, zmax] est ramené à un cube de côté 2 ;
-// l'azimut tourne autour de l'axe vertical et l'élévation incline la vue.
+// l'azimut tourne autour de l'axe vertical et l'élévation incline la vue ;
+// `tourne(ev)` dit quels appuis font tourner (voir `Camera.attache`).
 // Plusieurs surfaces se dessinent ensemble (`surfaces`) : leurs facettes sont
 // triées toutes ensemble, pour qu'une surface passe devant l'autre là où il faut.
 
@@ -16,12 +17,12 @@ function verifieDomaine(zmax, zmin) {
 }
 
 export class Vue3D {
-  constructor(canvas, { x, y, zmax, zmin = 0, azimut = -0.7, elevation = 0.5, rappel = () => {} }) {
+  constructor(canvas, { x, y, zmax, zmin = 0, azimut = -0.7, elevation = 0.5, rappel = () => {}, tourne }) {
     verifieDomaine(zmax, zmin);
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.domaine = { x, y, zmax, zmin };
-    this.camera = new Camera({ azimut, elevation, elevations: [0.05, 1.5] }).attache(canvas, rappel);
+    this.camera = new Camera({ azimut, elevation, elevations: [0.05, 1.5] }).attache(canvas, rappel, { tourne });
   }
 
   fixeDomaine(x, y, zmax, zmin = 0) {
